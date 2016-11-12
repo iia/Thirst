@@ -326,14 +326,14 @@ do_read_adc(void) {
 		os_memcpy(&config_st_interface.password, config_current.plant_wifi_ssid_password,
 			os_strlen(config_current.plant_wifi_ssid_password));
 
+		// Enable station mode.
+		wifi_set_opmode(STATION_MODE);
+
 		// Apply WiFi settings.
 		wifi_station_set_config_current(&config_st_interface);
 
 		// Set callback for WiFi events.
 		wifi_set_event_handler_cb(cb_wifi_event);
-
-		// Enable station mode.
-		wifi_set_opmode(STATION_MODE);
 
 		// Enable station mode reconnect.
 		wifi_station_set_reconnect_policy(true);
@@ -397,6 +397,9 @@ do_state_error(void) {
 
 	// Turn on the blue LED.
 	do_led_red_turn_on();
+
+	// Turn off WiFi.
+	wifi_set_opmode(NULL_MODE);
 }
 
 bool ICACHE_FLASH_ATTR
@@ -551,6 +554,9 @@ cb_system_init_done(void) {
 	uint32_t gpio_i_config_mode_value = 1;
 	struct softap_config config_ap_interface;
 	config_t *ptr_config_current = (config_t *)os_malloc(sizeof(config_t));
+
+	// Turn off WiFi.
+	wifi_set_opmode(NULL_MODE);
 
 	#if (ENABLE_DEBUG == 1)
 		os_printf("\n[+] DBG: cb_system_init_done()\n");
