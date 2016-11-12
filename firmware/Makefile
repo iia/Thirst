@@ -24,7 +24,7 @@ ESPTOOL		?= esptool.py
 ESPPORT		?= /dev/ttyUSB_HUZZAH_FEATHER
 
 # Project name.
-TARGET		= thirst
+TARGET		= Thirst
 
 TARGET_VER = 1.0.0
 
