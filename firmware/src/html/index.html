@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>Thirst | %PLANT_NAME%</title>
+
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+    <link rel="shortcut icon" href="fav.png">
+
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <br/>
+    <br/>
+
+    <!--
+    <small id="emailHelp" class="form-text text-muted col-sm-offset-4 col-sm-6">We'll never share your email with anyone else.</small>
+    -->
+
+    <div class="container container-fluid" id="container_main">
+      <form class="form-horizontal">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <span class="glyphicon glyphicon-grain" style="font-size:1.5em;"></span>
+            &nbsp;&nbsp;<font size="3">The Plant</font>
+          </div>
+
+          <div class="panel-body">
+              <div class="row form-group">
+                <label class="col-sm-3 control-label" for="">Plant Name:</label>
+                <div class="col-sm-7">
+                  <input type="text" class="form-control" id="" placeholder="Enter plant's name">
+                </div>
+              </div>
+              <div class="row form-group">
+                <label class="col-sm-3 control-label" for="">Configuration Password:</label>
+                <div class="col-sm-5">
+                  <input type="password" class="form-control" id="" placeholder="Enter plant's name">
+                </div>
+                <div class="checkbox col-sm-2">
+                    <label><input id="" type="checkbox">Show Characters</label>
+                </div>
+              </div>
+
+              <div class="row form-group">
+                <label class="col-sm-3 control-label" for="">WiFi Access Point:</label>
+                <div class="col-sm-7">
+                  <input type="text" class="form-control" id="" placeholder="WiFi access point to use for internet connectivity">
+                </div>
+              </div>
+
+              <div class="row form-group">
+                <label class="col-sm-3 control-label" for="">WiFi Password:</label>
+                <div class="col-sm-7">
+                  <input type="password" class="form-control" id="" placeholder="WiFi password for the access point">
+                </div>
+              </div>
+
+              <div class="row form-group">
+                <label class="col-sm-3 control-label" for="">Threshold:</label>
+
+                <div class="col-sm-2 text-right">
+                  Notify when
+                </div>
+
+                <div class="col-sm-3">
+                  <input type="number" class="form-control text-center" id="" max="100" min="1" value="5">
+                </div>
+
+                <div class="col-sm-2">
+                  percent
+                </div>
+              </div>
+
+              <div class="row form-group">
+
+                <div class="col-sm-offset-5 col-sm-3">
+                  <select class="form-control" id="" name="">
+                    <option value="0">less</option>
+                    <option value="1">more</option>
+                  </select>
+                </div>
+
+                <div class="col-sm-4">
+                  than current moisture
+                </div>
+              </div>
+
+
+              <div class="row form-group">
+                <label class="col-sm-3 control-label" for="">Check Frequency:</label>
+
+                <div class="col-sm-2 text-right">
+                  Once every
+                </div>
+
+                <div class="col-sm-3">
+                  <input type="number" class="form-control text-center" id="" value="5">
+                </div>
+
+                <div class="col-sm-2">
+                  <select class="form-control" id="" name="">
+                    <option value="0">day(s)</option>
+                    <option value="1">minute(s)</option>
+                  </select>
+                </div>
+              </div>
+
+          </div>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <span class="glyphicon glyphicon-bullhorn" style="font-size:1.5em;"></span>
+            &nbsp;&nbsp;<font size="3">Notifications</font>
+          </div>
+
+          <div class="panel-body">
+            <div class="row form-group">
+              <label class="col-sm-3 control-label" for="">E-mail To:</label>
+              <div class="col-sm-7">
+                <input type="email" class="form-control" id="" placeholder="E-mail address to send notifications">
+              </div>
+            </div>
+            <div class="row form-group">
+              <label class="col-sm-3 control-label" for="">Subject:</label>
+              <div class="col-sm-7">
+                <input type="email" class="form-control" id="" placeholder="Subject of the notification e-mail">
+              </div>
+            </div>
+            <div class="row form-group">
+              <label class="col-sm-3 control-label" for="">Message:</label>
+              <div class="col-sm-7">
+                <textarea style="resize:none" class="form-control" rows="4" placeholder="Body of the notification e-mail"></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+
+      <div class="row">
+        <div class="col-sm-6">
+          <button type="button" class="btn btn-block btn-success btn-default spacer-bottom"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span>&nbsp;&nbsp;Apply</button>
+        </div>
+        <div class="col-sm-6">
+          <button type="button" class="btn btn-block btn-default spacer-bottom"><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>&nbsp;&nbsp;About</button>
+        </div>
+      </div>
+    </div>
+
+    <br/>
+    <br/>
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="js/bootstrap.min.js"></script>
+  </body>
+</html>
