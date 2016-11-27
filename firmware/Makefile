@@ -122,7 +122,7 @@ $(FW_BASE):
 	$(Q) mkdir -p $@
 
 flash: $(APP_CODE_BIN) $(SDK_CODE_BIN)
-	$(ESPTOOL) --port $(ESPPORT) write_flash --flash_mode qio --flash_freq 80m \
+	$(ESPTOOL) --port $(ESPPORT) --baud 2000000 write_flash --flash_mode qio --flash_freq 80m \
 	$(APP_CODE_ADDR) $(APP_CODE_BIN) $(SDK_CODE_ADDR) $(SDK_CODE_BIN) \
 	$(MASTER_DEVICE_KEY_ADDR) $(MASTER_DEVICE_KEY_BIN) $(INIT_DATA_ADDR) \
 	$(INIT_DATA_BIN) $(INIT_DATA_REST_ADDR) $(INIT_DATA_REST_BIN)
