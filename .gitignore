@@ -1,6 +1,5 @@
 # Directories
 bin/
-patch/
 build/
 libesphttpd/
 esp-open-sdk/
