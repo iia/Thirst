@@ -2,11 +2,12 @@
 #include "user_interface.h"
 #include "espconn.h"
 
+#define ENABLE_DEBUG 0
 #define MEM_ADDR_RTC 0x40
-
-#define ENABLE_DEBUG 1
+#define ADC_SAMPLE_SIZE 4 // Sampling ADC takes time increasing this causes WDT to reset.
+#define DEEP_SLEEP_1_MIN 60000000
+#define DEEP_SLEEP_1_SEC 1000000
 #define UART_BIT_RATE UART_CLK_FREQ/BIT_RATE_115200
-
 #define GPIO_O_BIT_LED_RED BIT0
 #define GPIO_O_FUNC_LED_RED FUNC_GPIO0
 #define GPIO_O_LED_RED PERIPHS_IO_MUX_GPIO0_U
@@ -19,12 +20,6 @@
 #define GPIO_O_BIT_VCC_SENSOR BIT5
 #define GPIO_O_FUNC_VCC_SENSOR FUNC_GPIO5
 #define GPIO_O_VCC_SENSOR PERIPHS_IO_MUX_GPIO5_U
-
-#define INTERVAL_DEEP_SLEEP 20000000 // In microseconds.
-
-#define ADC_CLK_DIV 8
-#define ADC_SAMPLE_SIZE 64
-
 #define POSTMARK_API_PORT 80
 #define POSTMARK_SIZE_SEND_BUFFER 4096
 #define POSTMARK_API_HOST "api.postmarkapp.com"
@@ -45,46 +40,42 @@ Cache-Control: no-cache\n\
 \"Subject\": \"%s\",\
 \"HtmlBody\": \"%s\"\
 }"
-
-#define CONFIG_DEFAULT_FREQUENCY 1
-#define CONFIG_FREQUENCY_DAY 1
-#define CONFIG_FREQUENCY_MINUTE 2
+#define CONFIG_SECTOR_FLASH 0x3FA // 5th sector from the last sector of 4MB flash.
 #define CONFIG_SSID_LEN 32
 #define CONFIG_THRESHLOD_LT 1
 #define CONFIG_THRESHLOD_GT 2
-#define CONFIG_SECTOR_FLASH 0x3FB // 5th sector from the last sector of 4MB flash.
 #define CONFIG_SSID_PASSWORD_LEN 64
-#define CONFIG_NOTIFICATION_SUBJECT 64
-#define CONFIG_NOTIFICATION_MESSAGE 2048
+#define CONFIG_NOTIFICATION_SUBJECT_LEN 64
+#define CONFIG_NOTIFICATION_MESSAGE_LEN 2048
 #define CONFIG_NOTIFICATION_EMAIL_LEN 254
-#define CONFIG_DEFAULT_THRESHLOD_PERCENT 5
-#define CONFIG_DEFAULT_PLANT_AP_PASSWORD "1234567890"
-#define FMT_CONFIG_DEFAULT_PLANT_NAME "Thirst-%x%x%x%x%x%x"
-
+#define FMT_CONFIG_DEFAULT_PLANT_NAME "Thirst-%X%X%X"
 #define PERMUTATION_PEARSON_SIZE 256
 
-// Configuration.
+typedef struct {
+  bool action;
+  uint32_t times;
+  uint32_t interval;
+  void (*cb_blink_done)(void);
+} led_blink_parameters_t;
+
 typedef struct {
   uint8_t config_hash_pearson;
 
 	// Plant configuration.
-	char plant_name[CONFIG_SSID_LEN];
-	char plant_ap_password[CONFIG_SSID_PASSWORD_LEN];
-	char plant_wifi_ssid[CONFIG_SSID_LEN];
-  char plant_wifi_ssid_password[CONFIG_SSID_PASSWORD_LEN];
-  uint8_t plant_threshold_percent;
-  uint8_t plant_threshold_lt_gt;
-  int registered_value;
-  uint32_t frequency;
-  uint8_t frequency_type;
+	char the_plant_name[CONFIG_SSID_LEN];
+	char the_plant_configuration_password[CONFIG_SSID_PASSWORD_LEN];
+	char the_plant_wifi_ap[CONFIG_SSID_LEN];
+  char the_plant_wifi_ap_password[CONFIG_SSID_PASSWORD_LEN];
+  uint8_t the_plant_threshold_percent;
+  uint8_t the_plant_threshold_lt_gt;
+  uint32_t registered_value;
+  uint32_t the_plant_check_frequency;
 
 	// Notification configuration.
 	char notification_email[CONFIG_NOTIFICATION_EMAIL_LEN];
-	char notification_subject[CONFIG_NOTIFICATION_SUBJECT];
-	char notification_message[CONFIG_NOTIFICATION_MESSAGE];
+	char notification_email_subject[CONFIG_NOTIFICATION_SUBJECT_LEN];
+	char notification_email_message[CONFIG_NOTIFICATION_MESSAGE_LEN];
 } config_t;
-
-config_t config_current;
 
 // Pearson hash.
 static const uint8_t permutation_pearson[PERMUTATION_PEARSON_SIZE] = {
@@ -106,22 +97,23 @@ static const uint8_t permutation_pearson[PERMUTATION_PEARSON_SIZE] = {
 	51, 65, 28, 144, 254, 221, 93, 189, 194, 139, 112, 43, 71, 109, 184, 209
 };
 
-extern const unsigned long webpages_espfs_start;
-
 esp_tcp sock_tcp;
 struct espconn sock;
+
+/*
+ * Flash R/W works from RAM. So instead of normal global variable for current
+ * configuration a malloced pointer is used so the current configuration can be
+ * flashed without extra operations.
+ */
+config_t *config_current;
+
+// Used by web interface module to process partial arrival of POST data.
+char *buffer_post_form;
+
 ip_addr_t ip_dns_resolved;
-
 os_timer_t timer_generic_software;
-
-typedef struct {
-  bool action;
-  uint32_t times;
-  uint32_t interval;
-  void (*cb_blink_done)(void);
-} led_blink_parameters_t;
-
 led_blink_parameters_t led_blue_params_blink;
+extern const unsigned long webpages_espfs_start;
 
 void
 cb_timer_led_blue_blink(void *arg);
@@ -148,7 +140,19 @@ void ICACHE_FLASH_ATTR
 cb_wifi_event(System_Event_t *evt);
 
 void ICACHE_FLASH_ATTR
-toggle_sesnor(bool toggle);
+cb_system_init_done(void);
+
+void ICACHE_FLASH_ATTR
+do_get_default_plant_name(char *default_plant_name, uint8_t len);
+
+bool ICACHE_FLASH_ATTR
+do_save_current_config_to_flash(void);
+
+uint32_t ICACHE_FLASH_ATTR
+do_get_sensor_reading(uint32_t adc_sample_size);
+
+void ICACHE_FLASH_ATTR
+do_toggle_sesnor(bool toggle);
 
 void ICACHE_FLASH_ATTR
 do_read_adc(void);
@@ -163,7 +167,7 @@ void ICACHE_FLASH_ATTR
 do_state_error(void);
 
 bool ICACHE_FLASH_ATTR
-do_configuration_read(uint32_t *config_buffer);
+do_configuration_read(void);
 
 void ICACHE_FLASH_ATTR
 do_led_red_turn_on(void);
@@ -184,13 +188,11 @@ void ICACHE_FLASH_ATTR
 do_read_counter_value_from_rtc_mem(void);
 
 void ICACHE_FLASH_ATTR
-do_led_blue_blink(uint32_t times, uint32_t interval, void (*cb_blink_done)(void));
+do_led_blue_blink(uint32_t times, uint32_t interval,
+  void (*cb_blink_done)(void));
 
 void ICACHE_FLASH_ATTR
-cb_system_init_done(void);
-
-void ICACHE_FLASH_ATTR
-do_setup_debug_UART();
+do_setup_debug_UART(void);
 
 void ICACHE_FLASH_ATTR
 user_init(void);

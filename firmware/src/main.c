@@ -6,6 +6,29 @@
 #include "driver/uart.h"
 #include "web_interface.h"
 
+/*
+ * Already prepared default configuration so that it can simply copied to current
+ * configuration when required.
+ */
+config_t config_default = {
+	.config_hash_pearson = 0,
+
+	// Plant configuration.
+	.the_plant_name = "\0", // Will be filled with default plant name.
+	.the_plant_configuration_password = "1234567890",
+	.the_plant_wifi_ap = "\0",
+	.the_plant_wifi_ap_password = "\0",
+	.the_plant_threshold_percent = 5,
+	.the_plant_threshold_lt_gt = CONFIG_THRESHLOD_LT,
+	.registered_value = 0,
+	.the_plant_check_frequency = 1440, // 1 day in minutes.
+
+	// Notification configuration.
+	.notification_email = "\0",
+	.notification_email_subject = "\0",
+	.notification_email_message = "\0"
+};
+
 void
 cb_timer_led_blue_blink(void *arg) {
 	led_blink_parameters_t *params_blink = (led_blink_parameters_t *)arg;
@@ -32,8 +55,6 @@ cb_timer_led_blue_blink(void *arg) {
 				params_blink->cb_blink_done();
 			}
     #endif
-
-    system_deep_sleep(60000000); // Deep sleep for a minute.
 	}
 }
 
@@ -69,9 +90,9 @@ cb_sock_disconnect(void *arg) {
 		os_printf("\n[+] DBG: cb_sock_disconnect()\n");
 	#endif
 
-	os_printf("\n[+] DBG: Restarting...\n");
+	os_printf("\n[+] DBG: Going to deep sleep mode\n");
 
-	system_restart();
+	system_deep_sleep(DEEP_SLEEP_1_MIN);
 }
 
 void ICACHE_FLASH_ATTR
@@ -85,7 +106,9 @@ void ICACHE_FLASH_ATTR
 cb_sock_connect(void *arg) {
 	char buffer_json_data[1024];
 	struct espconn *sock = (struct espconn *)arg;
-	char buffer_message[POSTMARK_SIZE_SEND_BUFFER];
+	char *buffer_message = (char *)malloc(POSTMARK_SIZE_SEND_BUFFER);
+
+	os_bzero(buffer_message, POSTMARK_SIZE_SEND_BUFFER);
 
 	#if (ENABLE_DEBUG == 1)
 		os_printf("\n[+] DBG: cb_sock_connect()\n");
@@ -96,8 +119,8 @@ cb_sock_connect(void *arg) {
 	espconn_regist_disconcb(sock, cb_sock_disconnect);
 
 	os_sprintf(buffer_json_data, FMT_POSTMARK_DATA_HTTP_JSON,
-		config_current.notification_email, config_current.notification_subject,
-		config_current.notification_message);
+		config_current->notification_email, config_current->notification_email_subject,
+		config_current->notification_email_message);
 
 	os_sprintf(buffer_message, FMT_POSTMARK_HTTP_HEADER,
 		os_strlen(buffer_json_data), POSTMARK_API_TOKEN, buffer_json_data);
@@ -114,6 +137,8 @@ cb_sock_connect(void *arg) {
 
 		do_state_error();
 	}
+
+	os_free(buffer_message);
 }
 
 void ICACHE_FLASH_ATTR
@@ -157,6 +182,66 @@ cb_dns_resolved(const char *hostname, ip_addr_t *ip_resolved, void *arg) {
 
 		do_state_error();
 	}
+}
+
+void ICACHE_FLASH_ATTR
+do_get_default_plant_name(char *default_plant_name, uint8_t len) {
+  uint8_t mac_softap[6];
+
+  os_bzero(&mac_softap, sizeof(mac_softap));
+  os_bzero(default_plant_name, len);
+
+  wifi_get_macaddr(SOFTAP_IF, mac_softap);
+
+  os_sprintf(default_plant_name, FMT_CONFIG_DEFAULT_PLANT_NAME,
+    mac_softap[3], mac_softap[4], mac_softap[5]);
+}
+
+bool ICACHE_FLASH_ATTR
+do_save_current_config_to_flash(void) {
+	// Generate checksum of the current config first.
+	uint8_t config_hash = do_get_hash_pearson((uint8_t *)config_current);
+
+	config_current->config_hash_pearson = config_hash;
+
+	#if(ENABLE_DEBUG == 1)
+		os_printf("\n[+] DBG: Saving current configuration to flash memory\n");
+		os_printf("\nconfig_current->config_hash_pearson = 0x%x", do_get_hash_pearson((uint8_t *)config_current));
+		os_printf("\nconfig_current->the_plant_name = %s", config_current->the_plant_name);
+		os_printf("\nconfig_current->the_plant_configuration_password = %s", config_current->the_plant_configuration_password);
+		os_printf("\nconfig_current->the_plant_wifi_ap = %s", config_current->the_plant_wifi_ap);
+		os_printf("\nconfig_current->the_plant_wifi_ap_password = %s", config_current->the_plant_wifi_ap_password);
+		os_printf("\nconfig_current->the_plant_threshold_percent = %d", config_current->the_plant_threshold_percent);
+		os_printf("\nconfig_current->the_plant_threshold_lt_gt = %d", config_current->the_plant_threshold_lt_gt);
+		os_printf("\nconfig_current->registered_value = %d", config_current->registered_value);
+		os_printf("\nconfig_current->the_plant_check_frequency = %d", config_current->the_plant_check_frequency);
+		os_printf("\nconfig_current->notification_email = %s", config_current->notification_email);
+		os_printf("\nconfig_current->notification_email_subject = %s", config_current->notification_email_subject);
+		os_printf("\nconfig_current->notification_email_message = %s\n", config_current->notification_email_message);
+	#endif
+
+	if((spi_flash_erase_sector(CONFIG_SECTOR_FLASH)) != SPI_FLASH_RESULT_OK) {
+		#if (ENABLE_DEBUG == 1)
+			os_printf("\n[+] DBG: Configuration save to flash failed in erase phase\n");
+		#endif
+
+		do_state_error();
+
+		return false;
+	}
+	else {
+		if((spi_flash_write(CONFIG_SECTOR_FLASH*4096, (uint32_t *)config_current, sizeof(config_t))) != SPI_FLASH_RESULT_OK) {
+				#if (ENABLE_DEBUG == 1)
+					os_printf("\n[+] DBG: Configuration save to flash failed in write phase\n");
+				#endif
+
+				do_state_error();
+
+				return false;
+		}
+	}
+
+	return true;
 }
 
 void ICACHE_FLASH_ATTR
@@ -218,7 +303,32 @@ cb_wifi_event(System_Event_t *evt) {
 	}
 }
 
-void ICACHE_FLASH_ATTR toggle_sesnor(bool toggle) {
+uint32_t ICACHE_FLASH_ATTR
+do_get_sensor_reading(uint32_t adc_sample_size) {
+	uint32_t i = 0;
+	uint32_t sum = 0;
+	uint16_t *adc_samples = (uint16_t *)os_malloc(adc_sample_size);
+
+	do_toggle_sesnor(true);
+
+	os_delay_us(128);
+
+	for(i = 0; i < adc_sample_size; i++) {
+		adc_samples[i] = system_adc_read();
+	}
+
+	do_toggle_sesnor(false);
+
+	sum = 0;
+
+	for(i = 0; i < adc_sample_size; i++) {
+		sum = sum + adc_samples[i];
+	}
+
+	return sum / adc_sample_size;
+}
+
+void ICACHE_FLASH_ATTR do_toggle_sesnor(bool toggle) {
 	PIN_FUNC_SELECT(GPIO_O_VCC_SENSOR, GPIO_O_FUNC_VCC_SENSOR);
 
 	if(toggle) {
@@ -231,48 +341,13 @@ void ICACHE_FLASH_ATTR toggle_sesnor(bool toggle) {
 
 void ICACHE_FLASH_ATTR
 do_read_adc(void) {
-	int i = 0;
-	int average = 0;
-	uint32_t sum = 0;
-	int percent_change = 0;
+	uint32_t average = 0;
+	uint32_t percent_change = 0;
 	bool trigger_notification = false;
-	uint16_t adc_samples[ADC_SAMPLE_SIZE];
 	struct station_config config_st_interface;
 
-	#if (ENABLE_DEBUG == 1)
-		os_printf("\n[+] DBG: do_read_adc()\n");
-		os_printf("\n[+] DBG: Samplig ADC\n");
-	#endif
-
-	// Disable interrupts.
-	ets_intr_lock( );
-
-	toggle_sesnor(true);
-	os_delay_us(4000); // 4ms.
-
-	system_adc_read_fast(adc_samples, ADC_SAMPLE_SIZE, ADC_CLK_DIV);
-
-	os_delay_us(4000); // 4ms.
-	toggle_sesnor(false);
-
-	for(i = 0; i < ADC_SAMPLE_SIZE; i++) {
-		sum = sum + adc_samples[i];
-	}
-
-	average = sum / ADC_SAMPLE_SIZE;
-
-	#if (ENABLE_DEBUG == 1)
-		os_printf("\n[+] DBG: ADC sum = %d\n", sum);
-		os_printf("\n[+] DBG: ADC sample size = %d\n", ADC_SAMPLE_SIZE);
-		os_printf("\n[+] DBG: ADC average = %d\n", average);
-		os_printf("\n[+] DBG: Registered value = %d\n", config_current.registered_value);
-	#endif
-
-	// Enable interrupts.
-	ets_intr_unlock();
-
 	// To avoid division by zero.
-	if(config_current.registered_value == 0) {
+	if(config_current->registered_value == 0) {
 		#if (ENABLE_DEBUG == 1)
 			os_printf("\n[+] DBG: Registered value is 0, will cause division by zero\n");
 		#endif
@@ -282,31 +357,39 @@ do_read_adc(void) {
 		return;
 	}
 
-	// Calculate percent change.
-	percent_change =
-	(((average - config_current.registered_value) * 100) / config_current.registered_value);
+	#if (ENABLE_DEBUG == 1)
+		os_printf("\n[+] DBG: do_read_adc()\n");
+		os_printf("\n[+] DBG: Samplig ADC\n");
+	#endif
+
+	average = do_get_sensor_reading(ADC_SAMPLE_SIZE);
+	percent_change = (config_current->registered_value * config_current->the_plant_threshold_percent) / 100;
 
 	#if (ENABLE_DEBUG == 1)
+		os_printf("\n[+] DBG: ADC sample size = %d\n", ADC_SAMPLE_SIZE);
+		os_printf("\n[+] DBG: ADC average = %d\n", average);
+		os_printf("\n[+] DBG: Registered value = %d\n", config_current->registered_value);
 		os_printf("\n[+] DBG: Percent change = %d\n", percent_change);
 	#endif
 
-	// Positive percent change.
-	if(percent_change > 0) {
-		if(config_current.plant_threshold_lt_gt == CONFIG_THRESHLOD_GT &&
-			(percent_change >= config_current.plant_threshold_percent)) {
-				trigger_notification = true;
+	if(config_current->the_plant_threshold_lt_gt == CONFIG_THRESHLOD_LT) {
+		if(average <= (config_current->registered_value - percent_change)) {
+			trigger_notification = true;
 		}
 	}
-	// Negative percent change.
-	else if(percent_change < 0) {
-		if(config_current.plant_threshold_lt_gt == CONFIG_THRESHLOD_LT &&
-			((percent_change * -1) >= config_current.plant_threshold_percent)) {
-				trigger_notification = true;
+	else if(config_current->the_plant_threshold_lt_gt == CONFIG_THRESHLOD_GT) {
+		if(average >= (config_current->registered_value + percent_change)) {
+			trigger_notification = true;
 		}
 	}
-	// No percent change.
 	else {
-		trigger_notification = false;
+		#if (ENABLE_DEBUG == 1)
+			os_printf("\n[+] DBG: Wrong threshold LT/GT information in current configuration\n");
+		#endif
+
+		do_state_error();
+
+		return;
 	}
 
 	if(trigger_notification) {
@@ -317,17 +400,17 @@ do_read_adc(void) {
 		#endif
 
 		// Clear out WiFi station interface configuration storage.
-		os_memset(&config_st_interface, 0, sizeof(config_st_interface));
-
-		// WiFi station settings.
-		config_st_interface.bssid_set = 0;
-		os_memcpy(&config_st_interface.ssid, config_current.plant_wifi_ssid,
-			os_strlen(config_current.plant_wifi_ssid));
-		os_memcpy(&config_st_interface.password, config_current.plant_wifi_ssid_password,
-			os_strlen(config_current.plant_wifi_ssid_password));
+		os_bzero(&config_st_interface, sizeof(config_st_interface));
 
 		// Enable station mode.
 		wifi_set_opmode(STATION_MODE);
+
+		// WiFi station settings.
+		config_st_interface.bssid_set = 0;
+		os_memcpy(&config_st_interface.ssid, config_current->the_plant_wifi_ap,
+			os_strlen(config_current->the_plant_wifi_ap));
+		os_memcpy(&config_st_interface.password, config_current->the_plant_wifi_ap_password,
+			os_strlen(config_current->the_plant_wifi_ap_password));
 
 		// Apply WiFi settings.
 		wifi_station_set_config_current(&config_st_interface);
@@ -338,7 +421,6 @@ do_read_adc(void) {
 		// Enable station mode reconnect.
 		wifi_station_set_reconnect_policy(true);
 
-		// FIXME: Sometimes not connecting to WiFi until a reset.
 		// Connect WiFi in station mode.
 		if(!wifi_station_connect()) {
 			#if (ENABLE_DEBUG == 1)
@@ -354,19 +436,23 @@ do_read_adc(void) {
 		// Don't generate notification.
 		#if (ENABLE_DEBUG == 1)
 			os_printf("\n[+] DBG: ADC reading didn't trigger notification\n");
-			os_printf("\n[+] DBG: Restarting...\n");
+			os_printf("\n[+] DBG: Going to deep sleep mode\n");
 		#endif
 
-		system_restart();
+		system_deep_sleep(DEEP_SLEEP_1_MIN);
 	}
 }
 
 uint8_t ICACHE_FLASH_ATTR
 do_get_hash_pearson(uint8_t *bytes) {
-	int i = 0;
+	uint32_t i = 0;
 	uint8_t hash = 0;
 
-	for(i = 1; i < sizeof(bytes); i++) {
+	/*
+	 * Start from index 1 as we want to skip the first byte that is used to store
+	 * the checksum.
+	 */
+	for(i = 1; i < sizeof(config_t); i++) {
 		hash = permutation_pearson[hash ^ bytes[i]];
 	}
 
@@ -403,13 +489,14 @@ do_state_error(void) {
 }
 
 bool ICACHE_FLASH_ATTR
-do_configuration_read(uint32_t *config_buffer) {
+do_configuration_read(void) {
 	#if (ENABLE_DEBUG == 1)
 		os_printf("\n[+] DBG: Reading configuration from flash\n");
 	#endif
 
-	if(spi_flash_read((uint32_t)(CONFIG_SECTOR_FLASH * 4096),
-	config_buffer, (uint32_t)sizeof(config_t)) != SPI_FLASH_RESULT_OK) {
+	os_bzero(config_current, sizeof(config_current));
+
+	if(spi_flash_read(CONFIG_SECTOR_FLASH * 4096, (uint32_t *)config_current, sizeof(config_t)) != SPI_FLASH_RESULT_OK) {
 		#if (ENABLE_DEBUG == 1)
 			os_printf("\n[+] DBG: Configuration reading failed\n");
 		#endif
@@ -464,7 +551,7 @@ do_led_blue_blink(uint32_t times, uint32_t interval, void (*cb_blink_done)(void)
 	do_leds_turn_off();
 
 	// Clear out timer parameter storage.
-	os_memset(&led_blue_params_blink, 0 , sizeof(led_blue_params_blink));
+	os_bzero(&led_blue_params_blink, sizeof(led_blue_params_blink));
 
 	// Initialise timer parameters.
 	led_blue_params_blink.action = true;
@@ -480,14 +567,9 @@ do_led_blue_blink(uint32_t times, uint32_t interval, void (*cb_blink_done)(void)
 
 void ICACHE_FLASH_ATTR
 do_read_counter_value_from_rtc_mem(void) {
-	uint32_t time_duration, data_rtc = 0;
+	uint32_t data_rtc, time_duration = 0;
 
-	if(config_current.frequency_type == CONFIG_FREQUENCY_DAY) {
-		time_duration = config_current.frequency * 1441;
-	}
-	else if(config_current.frequency_type == CONFIG_FREQUENCY_MINUTE) {
-		time_duration = config_current.frequency;
-	}
+	time_duration = config_current->the_plant_check_frequency;
 
 	// RTC memory operations.
 	if(system_rtc_mem_read(MEM_ADDR_RTC, &data_rtc, 4)) {
@@ -502,6 +584,8 @@ do_read_counter_value_from_rtc_mem(void) {
 				#if (ENABLE_DEBUG == 1)
 					os_printf("\n[+] DBG: RTC count up and write = %d\n", data_rtc);
 				#endif
+
+				system_deep_sleep(DEEP_SLEEP_1_MIN);
 			}
 			else {
 				#if (ENABLE_DEBUG == 1)
@@ -548,81 +632,63 @@ do_read_counter_value_from_rtc_mem(void) {
 void ICACHE_FLASH_ATTR
 cb_system_init_done(void) {
 	struct ip_info ip;
-	uint8_t mac_softap[6];
 	uint8_t config_hash = 0;
 	bool config_none = false;
 	uint32_t gpio_i_config_mode_value = 1;
 	struct softap_config config_ap_interface;
-	config_t *ptr_config_current = (config_t *)os_malloc(sizeof(config_t));
 
-	// Turn off WiFi.
-	wifi_set_opmode(NULL_MODE);
+	// Must not be deallocated.
+	buffer_post_form = (char *)os_malloc(8192); // Used by web interface module.
+	config_current = (config_t *)os_malloc(sizeof(config_t));
 
 	#if (ENABLE_DEBUG == 1)
 		os_printf("\n[+] DBG: cb_system_init_done()\n");
 		os_printf("\n[+] DBG: SDK version = %s\n", system_get_sdk_version());
 	#endif
 
-	if(!do_configuration_read((uint32_t *)ptr_config_current)) {
+	if(!do_configuration_read()) {
 		return;
 	}
-
-	// Clear out current configuration storage.
-	os_memset(&config_current, 0, sizeof(config_t));
-	// Copy configuration read from the flash to the current configuration storage.
-	os_memcpy(&config_current, ptr_config_current, sizeof(config_t));
-	// Deallocate memory which was used to read the configuration from the flash.
-	os_free(ptr_config_current);
 
 	#if (ENABLE_DEBUG == 1)
 		os_printf("\n[+] DBG: Configuration reading successful\n");
 	#endif
 
 	// Generate pearson hash for the configuration that is read from the flash.
-	config_hash = do_get_hash_pearson((uint8_t *)&config_current);
+	config_hash = do_get_hash_pearson((uint8_t *)config_current);
 
 	#if (ENABLE_DEBUG == 1)
 		os_printf("\n[+] DBG: Pearson hash of the read configuration = 0x%x\n", config_hash);
 	#endif
 
-	if(config_hash != config_current.config_hash_pearson) {
+	if(config_hash != config_current->config_hash_pearson) {
 		#if (ENABLE_DEBUG == 1)
 			os_printf("\n[+] DBG: Configuration hash mismatch, calcualted = 0x%x, found = 0x%x\n",
 			config_hash,
-			config_current.config_hash_pearson);
+			config_current->config_hash_pearson);
 		#endif
 
 		config_none = true;
 
 		/*
 		 * Since no valid configuration was found on the flash the current
-		 * configuration will be initialised with default values. This default
-		 * configuration in only applicable to be used in the cvonfiguration mode.
-		 * Normal operation can not continue with this configuration.
+		 * configuration will be initialised with default values.
+		 *
+		 * This default configuration in only applicable to be used in the
+		 * configuration mode. Normal operation can not continue with this
+		 * configuration.
 		 */
 
-		// Clear out the storage for current configuration.
-		os_memset(&config_current, 0, sizeof(config_t));
+		// Set the deflault plant name on default configuration.
+		do_get_default_plant_name(config_default.the_plant_name,
+			sizeof(config_default.the_plant_name));
 
-		// Get MAC address of the AP interface.
-		os_memset(mac_softap, 0, sizeof(mac_softap));
-		wifi_get_macaddr(SOFTAP_IF, (uint8_t *)mac_softap);
+		// Set default configuration hash.
+		config_default.config_hash_pearson = do_get_hash_pearson((uint8_t *)&config_default);
 
-		/*
-		 * Populate current configuration fields with default values. Not all fields
-		 * are populated here. Since they are expected to be zero in default configuration.
-		 */
-		os_sprintf(config_current.plant_name, FMT_CONFIG_DEFAULT_PLANT_NAME,
-			mac_softap[0], mac_softap[1], mac_softap[2], mac_softap[3], mac_softap[4],
-			mac_softap[5]);
-		os_memcpy(config_current.plant_ap_password, CONFIG_DEFAULT_PLANT_AP_PASSWORD,
-			os_strlen(CONFIG_DEFAULT_PLANT_AP_PASSWORD));
-
-		config_current.plant_threshold_percent = CONFIG_DEFAULT_THRESHLOD_PERCENT;
-		config_current.plant_threshold_lt_gt = CONFIG_THRESHLOD_LT;
-
-		config_current.frequency = CONFIG_DEFAULT_FREQUENCY;
-		config_current.frequency_type = CONFIG_FREQUENCY_DAY;
+		// Set default configuration as the current configuration.
+		os_bzero(config_current, sizeof(config_t));
+		os_memcpy(config_current, &config_default, sizeof(config_default));
 	}
 
 	// Configure configuration mode selector GPIO pin as input.
@@ -642,8 +708,11 @@ cb_system_init_done(void) {
 		#endif
 
 		// Clear out configuration storage.
-		os_memset(&ip, 0, sizeof(ip));
-		os_memset(&config_ap_interface, 0 , sizeof(config_ap_interface));
+		os_bzero(&ip, sizeof(ip));
+		os_bzero(&config_ap_interface, sizeof(config_ap_interface));
+
+		// Enable AP mode.
+		wifi_set_opmode(SOFTAP_MODE);
 
 		wifi_softap_dhcps_stop();
 
@@ -656,15 +725,12 @@ cb_system_init_done(void) {
 		config_ap_interface.max_connection = 4;
 		config_ap_interface.beacon_interval = 50;
 		config_ap_interface.authmode = AUTH_WPA_WPA2_PSK;
-		os_memcpy(config_ap_interface.ssid, config_current.plant_name,
-			os_strlen(config_current.plant_name));
-		os_memcpy(config_ap_interface.password, config_current.plant_ap_password,
-			os_strlen(config_current.plant_ap_password));
+		os_memcpy(config_ap_interface.ssid, config_current->the_plant_name,
+			os_strlen(config_current->the_plant_name));
+		os_memcpy(config_ap_interface.password, config_current->the_plant_configuration_password,
+			os_strlen(config_current->the_plant_configuration_password));
 
 		wifi_softap_dhcps_start();
-
-		// Enable AP mode.
-		wifi_set_opmode(SOFTAP_MODE);
 
 		// Apply AP configuration.
 		wifi_softap_set_config_current(&config_ap_interface);
@@ -701,7 +767,7 @@ cb_system_init_done(void) {
 }
 
 void ICACHE_FLASH_ATTR
-do_setup_debug_UART() {
+do_setup_debug_UART(void) {
 	uart_div_modify(UART0, UART_BIT_RATE);
 
 	system_set_os_print(1);
@@ -710,10 +776,10 @@ do_setup_debug_UART() {
 void ICACHE_FLASH_ATTR
 user_init(void) {
 	#if (ENABLE_DEBUG == 1)
-		os_printf("\n[+] DBG: user_init()\n");
-
 		// Setup debug UART.
 		do_setup_debug_UART();
+
+		os_printf("\n[+] DBG: user_init()\n");
 	#endif
 
 	gpio_init();
