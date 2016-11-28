@@ -20,6 +20,11 @@ module and the one on the board is used to switch the system into configuration 
     <img align="center" src="https://github.com/iia/Thirst/blob/master/img/hardware.jpg" width="350" height="450" />
 </p>
 
+LED Status
+----------
+
+There are two LEDs, one blue and one red on the system. If any error situation occurs during the operation then the red LED wil turn on. The blue LED is turned on when the device is in configuration mode. In normal operation mode the blue LED blinks every minute which indicates that the device is operating properly.
+
 Compiling and Flashing the Firmware
 -----------------------------------
 Before compiling the firmware the build environment must be prepared,
