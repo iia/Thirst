@@ -369,7 +369,7 @@ cgi_save_settings(HttpdConnData *connection_data) {
 		/*
 		 * Sometimes doesn't boot properly after restart with system_restart().
 		 *
-		 * Seems like this is caused by the builtin UART of the board. So we deep sleep
+		 * Seems like this is caused by the built-in UART of the board. So we deep sleep
 		 * for 2 seconds and wake up instead of restarting.
 		 */
 		os_timer_setfn(&timer_generic_software, (os_timer_func_t *)cb_timer_deep_sleep, NULL);

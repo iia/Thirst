@@ -2,7 +2,11 @@
 #include "user_interface.h"
 #include "espconn.h"
 
-#define ENABLE_DEBUG 0
+/*
+ * FIXME: Seems like built-in UART RTS DTR pin causes problem booting.
+ * Enabling debug seems to fix this.
+ */
+#define ENABLE_DEBUG 1
 #define MEM_ADDR_RTC 0x40
 #define ADC_SAMPLE_SIZE 4 // Sampling ADC takes time increasing this causes WDT to reset.
 #define DEEP_SLEEP_1_MIN 60000000
