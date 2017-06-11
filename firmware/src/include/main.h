@@ -3,10 +3,9 @@
 #include "espconn.h"
 #include "gpio.h"
 
-#define ENABLE_DEBUG 1
+#define ENABLE_DEBUG 0
 #define MEM_ADDR_RTC 0x40
 #define ADC_SAMPLE_SIZE 4 // Sampling ADC takes time increasing this causes WDT to reset.
-#define DEEP_SLEEP_1_MIN 60000000
 #define DEEP_SLEEP_1_SEC 1000000
 #define UART_BIT_RATE UART_CLK_FREQ/BIT_RATE_115200
 #define GPIO_O_BIT_LED_BLUE BIT2
@@ -33,7 +32,7 @@ Cache-Control: no-cache\n\
 %s"
 #define FMT_POSTMARK_DATA_HTTP_JSON "\
 {\
-\"From\": \"ishraq@tinkerforge.com\",\
+\"From\": \"notify@thirst.app\",\
 \"To\": \"%s\",\
 \"Subject\": \"%s\",\
 \"HtmlBody\": \"%s\"\
@@ -102,13 +101,9 @@ config_t *config_current;
 char *buffer_post_form;
 
 ip_addr_t ip_dns_resolved;
+bool state_error_led_state;
 os_timer_t timer_generic_software;
 extern const unsigned long webpages_espfs_start;
-
-bool state_error_led_state;
-
-void
-cb_timer_led_blue_blink(void *arg);
 
 void
 cb_timer_disconnect_sock(void);
@@ -169,11 +164,6 @@ do_led_blue_turn_on(void);
 
 void ICACHE_FLASH_ATTR
 do_led_blue_turn_off(void);
-
-/*
-void ICACHE_FLASH_ATTR
-do_leds_turn_off(void);
-*/
 
 void ICACHE_FLASH_ATTR
 do_read_counter_value_from_rtc_mem(void);

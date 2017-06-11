@@ -625,6 +625,8 @@ cb_system_init_done(void) {
 		os_delay_us(64000);
 	}
 
+	do_led_blue_turn_off();
+
 	/*
 	 * Check whether to switch to configuration mode or not.
 	 * If grounded then 0 (configuration mode button is pressed) otherwise 1.
