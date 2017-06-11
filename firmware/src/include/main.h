@@ -1,29 +1,23 @@
 #include "osapi.h"
 #include "user_interface.h"
 #include "espconn.h"
+#include "gpio.h"
 
-/*
- * FIXME: Seems like built-in UART RTS DTR pin causes problem booting.
- * Enabling debug seems to fix this.
- */
 #define ENABLE_DEBUG 1
 #define MEM_ADDR_RTC 0x40
 #define ADC_SAMPLE_SIZE 4 // Sampling ADC takes time increasing this causes WDT to reset.
 #define DEEP_SLEEP_1_MIN 60000000
 #define DEEP_SLEEP_1_SEC 1000000
 #define UART_BIT_RATE UART_CLK_FREQ/BIT_RATE_115200
-#define GPIO_O_BIT_LED_RED BIT0
-#define GPIO_O_FUNC_LED_RED FUNC_GPIO0
-#define GPIO_O_LED_RED PERIPHS_IO_MUX_GPIO0_U
 #define GPIO_O_BIT_LED_BLUE BIT2
 #define GPIO_O_FUNC_LED_BLUE FUNC_GPIO2
 #define GPIO_O_LED_BLUE PERIPHS_IO_MUX_GPIO2_U
-#define GPIO_I_BIT_CONFIG_MODE BIT4
-#define GPIO_I_FUNC_CONFIG_MODE FUNC_GPIO4
-#define GPIO_I_CONFIG_MODE PERIPHS_IO_MUX_GPIO4_U
-#define GPIO_O_BIT_VCC_SENSOR BIT5
-#define GPIO_O_FUNC_VCC_SENSOR FUNC_GPIO5
-#define GPIO_O_VCC_SENSOR PERIPHS_IO_MUX_GPIO5_U
+#define GPIO_I_BIT_CONFIG_MODE BIT0
+#define GPIO_I_FUNC_CONFIG_MODE FUNC_GPIO0
+#define GPIO_I_CONFIG_MODE PERIPHS_IO_MUX_GPIO0_U
+#define GPIO_O_BIT_VCC_SENSOR BIT15
+#define GPIO_O_FUNC_VCC_SENSOR FUNC_GPIO15
+#define GPIO_O_VCC_SENSOR PERIPHS_IO_MUX_MTDO_U
 #define POSTMARK_API_PORT 80
 #define POSTMARK_SIZE_SEND_BUFFER 4096
 #define POSTMARK_API_HOST "api.postmarkapp.com"
@@ -54,13 +48,6 @@ Cache-Control: no-cache\n\
 #define CONFIG_NOTIFICATION_EMAIL_LEN 254
 #define FMT_CONFIG_DEFAULT_PLANT_NAME "Thirst-%X%X%X"
 #define PERMUTATION_PEARSON_SIZE 256
-
-typedef struct {
-  bool action;
-  uint32_t times;
-  uint32_t interval;
-  void (*cb_blink_done)(void);
-} led_blink_parameters_t;
 
 typedef struct {
   uint8_t config_hash_pearson;
@@ -116,8 +103,9 @@ char *buffer_post_form;
 
 ip_addr_t ip_dns_resolved;
 os_timer_t timer_generic_software;
-led_blink_parameters_t led_blue_params_blink;
 extern const unsigned long webpages_espfs_start;
+
+bool state_error_led_state;
 
 void
 cb_timer_led_blue_blink(void *arg);
@@ -150,7 +138,7 @@ void ICACHE_FLASH_ATTR
 do_get_default_plant_name(char *default_plant_name, uint8_t len);
 
 bool ICACHE_FLASH_ATTR
-do_save_current_config_to_flash(void);
+do_save_current_config_to_flash(bool do_timer_reset);
 
 uint32_t ICACHE_FLASH_ATTR
 do_get_sensor_reading(uint32_t adc_sample_size);
@@ -168,32 +156,27 @@ void ICACHE_FLASH_ATTR
 do_state_config(void);
 
 void ICACHE_FLASH_ATTR
+do_state_error_toggle_led(void);
+
+void ICACHE_FLASH_ATTR
 do_state_error(void);
 
 bool ICACHE_FLASH_ATTR
 do_configuration_read(void);
 
 void ICACHE_FLASH_ATTR
-do_led_red_turn_on(void);
-
-void ICACHE_FLASH_ATTR
 do_led_blue_turn_on(void);
-
-void ICACHE_FLASH_ATTR
-do_led_red_turn_off(void);
 
 void ICACHE_FLASH_ATTR
 do_led_blue_turn_off(void);
 
+/*
 void ICACHE_FLASH_ATTR
 do_leds_turn_off(void);
+*/
 
 void ICACHE_FLASH_ATTR
 do_read_counter_value_from_rtc_mem(void);
-
-void ICACHE_FLASH_ATTR
-do_led_blue_blink(uint32_t times, uint32_t interval,
-  void (*cb_blink_done)(void));
 
 void ICACHE_FLASH_ATTR
 do_setup_debug_UART(void);

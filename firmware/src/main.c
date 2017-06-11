@@ -6,6 +6,8 @@
 #include "driver/uart.h"
 #include "web_interface.h"
 
+bool state_error_led_state = true;
+
 /*
  * Already prepared default configuration so that it can simply copied to current
  * configuration when required.
@@ -21,42 +23,13 @@ config_t config_default = {
 	.the_plant_threshold_percent = 5,
 	.the_plant_threshold_lt_gt = CONFIG_THRESHLOD_LT,
 	.registered_value = 0,
-	.the_plant_check_frequency = 1440, // 1 day in minutes.
+	.the_plant_check_frequency = 21600, // 1 day in 4 second units.
 
 	// Notification configuration.
 	.notification_email = "\0",
 	.notification_email_subject = "\0",
 	.notification_email_message = "\0"
 };
-
-void
-cb_timer_led_blue_blink(void *arg) {
-	led_blink_parameters_t *params_blink = (led_blink_parameters_t *)arg;
-
-	// Toggle LED.
-	if(params_blink->action){
-		do_led_blue_turn_on();
-	}
-	else {
-		do_led_blue_turn_off();
-	}
-
-	params_blink->times--;
-	params_blink->action = !params_blink->action;
-
-	if(params_blink->times == 0) {
-		os_timer_disarm(&timer_generic_software);
-
-		// Blinking sequence complete.
-		#if (ENABLE_DEBUG == 1)
-      os_printf("\n[+] DBG: Blue LED blink sequence done\n");
-
-			if(params_blink->cb_blink_done != NULL) {
-				params_blink->cb_blink_done();
-			}
-    #endif
-	}
-}
 
 void
 cb_timer_disconnect_sock(void) {
@@ -92,7 +65,7 @@ cb_sock_disconnect(void *arg) {
 
 	os_printf("\n[+] DBG: Going to deep sleep mode\n");
 
-	system_deep_sleep(DEEP_SLEEP_1_MIN);
+	system_deep_sleep(DEEP_SLEEP_1_SEC * 8);
 }
 
 void ICACHE_FLASH_ATTR
@@ -198,11 +171,33 @@ do_get_default_plant_name(char *default_plant_name, uint8_t len) {
 }
 
 bool ICACHE_FLASH_ATTR
-do_save_current_config_to_flash(void) {
-	// Generate checksum of the current config first.
-	uint8_t config_hash = do_get_hash_pearson((uint8_t *)config_current);
+do_save_current_config_to_flash(bool do_timer_reset) {
+	uint32_t data_rtc = 0;
 
-	config_current->config_hash_pearson = config_hash;
+	// Generate checksum of the current config first.
+	config_current->config_hash_pearson = do_get_hash_pearson((uint8_t *)config_current);
+
+	if(do_timer_reset) {
+		if(system_rtc_mem_write(MEM_ADDR_RTC, &data_rtc, 4)) {
+			#if (ENABLE_DEBUG == 1)
+				os_printf("\n[+] DBG: Resetting timer state\n");
+			#endif
+		}
+		else {
+			#if (ENABLE_DEBUG == 1)
+				os_printf("\n[+] DBG: Failed to reset timer state\n");
+			#endif
+
+			do_state_error();
+
+			return false;
+		}
+	}
+	else {
+		#if (ENABLE_DEBUG == 1)
+			os_printf("\n[+] DBG: Not resetting timer state\n");
+		#endif
+	}
 
 	#if(ENABLE_DEBUG == 1)
 		os_printf("\n[+] DBG: Saving current configuration to flash memory\n");
@@ -439,7 +434,7 @@ do_read_adc(void) {
 			os_printf("\n[+] DBG: Going to deep sleep mode\n");
 		#endif
 
-		system_deep_sleep(DEEP_SLEEP_1_MIN);
+		system_deep_sleep(DEEP_SLEEP_1_SEC * 8);
 	}
 }
 
@@ -465,11 +460,19 @@ do_state_config(void) {
 		os_printf("\n[+] DBG: In configuration state\n");
 	#endif
 
-	// Turn off both the blue and the red LEDs.
-	do_leds_turn_off();
-
-	// Turn on the blue LED.
 	do_led_blue_turn_on();
+}
+
+void ICACHE_FLASH_ATTR
+do_state_error_toggle_led(void) {
+	if(state_error_led_state) {
+		do_led_blue_turn_on();
+		state_error_led_state = false;
+	}
+	else {
+		do_led_blue_turn_off();
+		state_error_led_state = true;
+	}
 }
 
 void ICACHE_FLASH_ATTR
@@ -478,14 +481,12 @@ do_state_error(void) {
 		os_printf("\n[+] DBG: In error state\n");
 	#endif
 
-	// Turn off both the blue and the red LEDs.
-	do_leds_turn_off();
-
-	// Turn on the blue LED.
-	do_led_red_turn_on();
-
 	// Turn off WiFi.
 	wifi_set_opmode(NULL_MODE);
+
+	os_timer_disarm(&timer_generic_software);
+	os_timer_setfn(&timer_generic_software, do_state_error_toggle_led, NULL);
+	os_timer_arm(&timer_generic_software, 1000, true);
 }
 
 bool ICACHE_FLASH_ATTR
@@ -510,59 +511,15 @@ do_configuration_read(void) {
 }
 
 void ICACHE_FLASH_ATTR
-do_led_red_turn_on(void) {
-	PIN_FUNC_SELECT(GPIO_O_LED_RED, GPIO_O_FUNC_LED_RED);
-	gpio_output_set(0, GPIO_O_BIT_LED_RED, GPIO_O_BIT_LED_RED, 0);
-}
-
-void ICACHE_FLASH_ATTR
 do_led_blue_turn_on(void) {
 	PIN_FUNC_SELECT(GPIO_O_LED_BLUE, GPIO_O_FUNC_LED_BLUE);
 	gpio_output_set(0, GPIO_O_BIT_LED_BLUE, GPIO_O_BIT_LED_BLUE, 0);
 }
 
 void ICACHE_FLASH_ATTR
-do_led_red_turn_off(void) {
-	PIN_FUNC_SELECT(GPIO_O_LED_RED, GPIO_O_FUNC_LED_RED);
-	gpio_output_set(GPIO_O_BIT_LED_RED, 0, GPIO_O_BIT_LED_RED, 0);
-}
-
-void ICACHE_FLASH_ATTR
 do_led_blue_turn_off(void) {
 	PIN_FUNC_SELECT(GPIO_O_LED_BLUE, GPIO_O_FUNC_LED_BLUE);
 	gpio_output_set(GPIO_O_BIT_LED_BLUE, 0, GPIO_O_BIT_LED_BLUE, 0);
-}
-
-void ICACHE_FLASH_ATTR
-do_leds_turn_off(void) {
-	do_led_blue_turn_off();
-	do_led_red_turn_off();
-}
-
-void ICACHE_FLASH_ATTR
-do_led_blue_blink(uint32_t times, uint32_t interval, void (*cb_blink_done)(void)) {
-	os_timer_disarm(&timer_generic_software);
-
-	#if (ENABLE_DEBUG == 1)
-		os_printf("\n[+] DBG: do_led_blue_blink()\n");
-	#endif
-
-	// Turn off both the blue and the red LEDs.
-	do_leds_turn_off();
-
-	// Clear out timer parameter storage.
-	os_bzero(&led_blue_params_blink, sizeof(led_blue_params_blink));
-
-	// Initialise timer parameters.
-	led_blue_params_blink.action = true;
-	led_blue_params_blink.times = times;
-	led_blue_params_blink.interval = interval;
-	led_blue_params_blink.cb_blink_done = cb_blink_done;
-
-	os_timer_setfn(&timer_generic_software, (os_timer_func_t *)cb_timer_led_blue_blink,
-	(void *)&led_blue_params_blink);
-
-	os_timer_arm(&timer_generic_software, interval, true);
 }
 
 void ICACHE_FLASH_ATTR
@@ -585,7 +542,7 @@ do_read_counter_value_from_rtc_mem(void) {
 					os_printf("\n[+] DBG: RTC count up and write = %d\n", data_rtc);
 				#endif
 
-				system_deep_sleep(DEEP_SLEEP_1_MIN);
+				system_deep_sleep(DEEP_SLEEP_1_SEC * 8);
 			}
 			else {
 				#if (ENABLE_DEBUG == 1)
@@ -631,6 +588,7 @@ do_read_counter_value_from_rtc_mem(void) {
 
 void ICACHE_FLASH_ATTR
 cb_system_init_done(void) {
+	uint32_t i = 0;
 	struct ip_info ip;
 	uint8_t config_hash = 0;
 	bool config_none = false;
@@ -653,6 +611,27 @@ cb_system_init_done(void) {
 	#if (ENABLE_DEBUG == 1)
 		os_printf("\n[+] DBG: Configuration reading successful\n");
 	#endif
+
+	// Configure configuration mode selector GPIO pin as input.
+	PIN_FUNC_SELECT(GPIO_I_CONFIG_MODE, GPIO_I_FUNC_CONFIG_MODE);
+	gpio_output_set(0, 0, 0, GPIO_I_BIT_CONFIG_MODE);
+	PIN_PULLUP_EN(GPIO_I_CONFIG_MODE);
+
+	// Blink rapidly for 2 seconds.
+	for(i = 0; i < 16; i++) {
+		do_led_blue_turn_off();
+		os_delay_us(64000);
+		do_led_blue_turn_on();
+		os_delay_us(64000);
+	}
+
+	/*
+	 * Check whether to switch to configuration mode or not.
+	 * If grounded then 0 (configuration mode button is pressed) otherwise 1.
+	 */
+	gpio_i_config_mode_value = GPIO_INPUT_GET(0);
+
+	os_printf("\n[+] DBG: Configuration mode button state = %d\n", gpio_i_config_mode_value);
 
 	// Generate pearson hash for the configuration that is read from the flash.
 	config_hash = do_get_hash_pearson((uint8_t *)config_current);
@@ -691,16 +670,6 @@ cb_system_init_done(void) {
 		os_memcpy(config_current, &config_default, sizeof(config_default));
 	}
 
-	// Configure configuration mode selector GPIO pin as input.
-	gpio_output_set(0, GPIO_I_BIT_CONFIG_MODE, 0, GPIO_I_BIT_CONFIG_MODE);
-	PIN_PULLUP_EN(GPIO_I_CONFIG_MODE);
-
-	/*
-	 * Check whether to switch to configuration mode or not.
-	 * If grounded then 0 (configuration mode button is pressed) otherwise 1.
-	 */
-	gpio_i_config_mode_value = GPIO_INPUT_GET(4);
-
 	if (gpio_i_config_mode_value == 0) {
 		// config_t mode.
 		#if (ENABLE_DEBUG == 1)
@@ -713,7 +682,6 @@ cb_system_init_done(void) {
 
 		// Enable AP mode.
 		wifi_set_opmode(SOFTAP_MODE);
-
 		wifi_softap_dhcps_stop();
 
 		// Set AP mode configuration parameters.
@@ -721,14 +689,18 @@ cb_system_init_done(void) {
 		IP4_ADDR(&ip.gw, 192, 168, 7, 1);
 		IP4_ADDR(&ip.netmask, 255, 255, 255, 0);
 		wifi_set_ip_info(SOFTAP_IF, &ip);
+
 		config_ap_interface.channel = 7;
 		config_ap_interface.max_connection = 4;
 		config_ap_interface.beacon_interval = 50;
 		config_ap_interface.authmode = AUTH_WPA_WPA2_PSK;
-		os_memcpy(config_ap_interface.ssid, config_current->the_plant_name,
-			os_strlen(config_current->the_plant_name));
-		os_memcpy(config_ap_interface.password, config_current->the_plant_configuration_password,
-			os_strlen(config_current->the_plant_configuration_password));
+
+		os_memcpy(config_ap_interface.ssid,
+							config_current->the_plant_name,
+							os_strlen(config_current->the_plant_name));
+		os_memcpy(config_ap_interface.password,
+							config_current->the_plant_configuration_password,
+							os_strlen(config_current->the_plant_configuration_password));
 
 		wifi_softap_dhcps_start();
 
@@ -758,11 +730,7 @@ cb_system_init_done(void) {
 			return;
 		}
 
-		/*
-		 * Blink sequence of 16 seconds with 125ms interval and then call function
-		 * to check timing state.
-		 */
-		do_led_blue_blink(32, 125, &do_read_counter_value_from_rtc_mem);
+		do_read_counter_value_from_rtc_mem();
 	}
 }
 
@@ -778,13 +746,11 @@ user_init(void) {
 	#if (ENABLE_DEBUG == 1)
 		// Setup debug UART.
 		do_setup_debug_UART();
-
 		os_printf("\n[+] DBG: user_init()\n");
 	#endif
 
 	gpio_init();
-
-	do_leds_turn_off();
+	do_led_blue_turn_off();
 
 	// Register system initialisation done callback.
 	system_init_done_cb(cb_system_init_done);

@@ -306,7 +306,7 @@
                         <b>
                           <small>
                             Value must be between 1 and 10080.<br/><br/>
-                            Note: 1440 minutes = 1 day. So a maximum of 7 days is
+                            Note: 1440 minutes = 1 day. So a maximum of 7 days (1440 x 7 = 10080) is
                             supported.
                           </small>
                         </b>
@@ -315,6 +315,15 @@
                   </div>
                   <div class="col-sm-3 text-left">
                     minute(s)
+                  </div>
+                </div>
+                <div class="row form-group">
+                  <div class="checkbox col-sm-offset-3 col-sm-7">
+                      <label>
+                        <input id="the_plant_reset_current_timer_state"
+                        name="the_plant_reset_current_timer_state" type="checkbox" checked />
+                        Reset Current Timer State
+                      </label>
                   </div>
                 </div>
             </div>
@@ -429,6 +438,7 @@
   var JSON_STATUS_OK = 1;
   var JSON_STATUS_FAILED = 2;
   var TIMEOUT_GENERIC = 16000; // 16 seconds.
+  var TIMEOUT_GET_SENSOR_READING = 4000 // 4 seconds.
   var REQUEST_JSON_GET_SETTINGS = 1;
   var REQUEST_JSON_GET_SENSOR_READING = 2;
   var REQUEST_JSON_SAVE_SETTINGS = 3;
@@ -482,7 +492,7 @@
         'data': null
       },
       dataType: 'json',
-      timeout: TIMEOUT_GENERIC,
+      timeout: TIMEOUT_GET_SENSOR_READING,
       success: function(data) {
         $('#btn_get_sesnor_reading').prop('disabled', false);
 
@@ -635,7 +645,7 @@
     $('#the_plant_threshold_percent').val(data.the_plant_threshold_percent);
     $('#the_plant_threshold_lt_gt').val(data.the_plant_threshold_lt_gt);
     $('#registered_value').val(data.registered_value);
-    $('#the_plant_check_frequency').val(data.the_plant_check_frequency);
+    $('#the_plant_check_frequency').val(data.the_plant_check_frequency / 8);
     $('#notification_email').val(data.notification_email);
     $('#notification_email_subject').val(data.notification_email_subject);
     $('#notification_email_message').val(data.notification_email_message);
@@ -669,6 +679,14 @@
 
   function saveSettings(e) {
     var serialized_form_data = '&' + $('#form_settings').serialize() + '&';
+
+    if (serialized_form_data.indexOf('the_plant_reset_current_timer_state') === -1) {
+      serialized_form_data += 'the_plant_reset_current_timer_state=0&'
+    }
+    else {
+      serialized_form_data = serialized_form_data.replace('the_plant_reset_current_timer_state=on',
+                                                          'the_plant_reset_current_timer_state=1');
+    }
 
     $.ajax({
       type: 'POST',

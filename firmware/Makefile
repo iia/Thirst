@@ -19,7 +19,7 @@ LIBESPHTTPD_BASE = libesphttpd
 
 # esptool related definitions.
 ESPTOOL ?= esptool.py
-ESPPORT ?= /dev/ttyUSB_HUZZAH_FEATHER
+ESPPORT ?= /dev/ttyUSB0
 
 # Project name.
 TARGET = Thirst
@@ -123,7 +123,7 @@ $(FW_BASE):
 
 flash: $(APP_CODE_BIN) $(SDK_CODE_BIN)
 	$(ESPTOOL) --port $(ESPPORT) --baud 2000000 write_flash --flash_mode qio \
-	--flash_freq 80m $(APP_CODE_ADDR) $(APP_CODE_BIN) $(SDK_CODE_ADDR) \
+	--flash_size 32m --flash_freq 80m $(APP_CODE_ADDR) $(APP_CODE_BIN) $(SDK_CODE_ADDR) \
 	$(SDK_CODE_BIN) $(MASTER_DEVICE_KEY_ADDR) $(MASTER_DEVICE_KEY_BIN) \
 	$(INIT_DATA_ADDR) $(INIT_DATA_BIN) $(BLANK_ADDR) $(BLANK_BIN)
 
