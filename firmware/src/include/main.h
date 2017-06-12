@@ -32,7 +32,7 @@ Cache-Control: no-cache\n\
 %s"
 #define FMT_POSTMARK_DATA_HTTP_JSON "\
 {\
-\"From\": \"notify@thirst.app\",\
+\"From\": \"ishraq@tinkerforge.com\",\
 \"To\": \"%s\",\
 \"Subject\": \"%s\",\
 \"HtmlBody\": \"%s\"\
