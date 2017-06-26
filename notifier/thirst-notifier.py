@@ -1,6 +1,22 @@
+import sys
 import cherrypy
+import subprocess
+from cherrypy.process.plugins import Daemonizer
 
-class Notifier(object):
+# Service parameters
+SERVICE_ON_IP = "0.0.0.0"
+SERVICE_ON_PORT = 4200
+SERVICE_ON_MOUNT_POINT = "/thirst/notifier"
+SERVICE_LOG_FILE = "/var/log/thirst-notifier.log"
+
+# SMTP server parameters.
+SMTP_SERVER = "SMTP_SERVER"
+SMTP_PORT = 25
+SMTP_USER = "SMTP_USER"
+SMTP_PASSWORD = "SMTP_PASSWORD"
+SMTP_USE_TLS = "yes"
+
+class ThirstNotifier(object):
     def verify_request(self, request):
         def verify_email_address(email_address):
             at_split = email_address.split("@")
@@ -72,9 +88,11 @@ class Notifier(object):
         print request_send_email
 
         if not request_ok:
-            return {"ok": request_ok, "status": message}
+            return {"ok": 0, "status": message}
         else:
-            cmd = "sendemail -o tls=yes -f \"" + \
+            cmd = "sendemail -o tls=" + \
+                  SMTP_USE_TLS + \
+                  " -f \"" + \
                   request_send_email["from"] + \
                   "\" -t \"" + \
                   request_send_email["to"] + \
@@ -82,9 +100,45 @@ class Notifier(object):
                   request_send_email["subject"] + \
                   "\" -m \"" + \
                   request_send_email["message"] + \
-                  "\" -s smtp.gmail.com:587 -xu \"thirst.the.project@gmail.com\" -xp \"Qqqq-1111\""
+                  "\" -s " + \
+                  SMTP_SERVER + \
+                  ":" + \
+                  str(SMTP_PORT) + \
+                  " -xu \"" + \
+                  SMTP_USER + \
+                  "\" -xp \"" + \
+                  SMTP_PASSWORD + \
+                  "\""
 
-            return {"ok": True, "status": "Email sent"}
+            p = subprocess.Popen([cmd], stdout=subprocess.PIPE, shell=True)
 
-cherrypy.server.socket_host = '0.0.0.0'
-cherrypy.quickstart(Notifier())
+            status = ""
+            sout, serr = p.communicate()
+            exit_code = p.returncode
+
+            if sout and serr:
+                status =  sout + " " + serr
+            elif sout and not serr:
+                status = sout
+            elif not sout and serr:
+                status = serr
+
+            if exit_code != 0:
+                return {"ok": 0, "status": unicode(status)}
+            else:
+                return {"ok": 1, "status": unicode(status)}
+
+if __name__ == '__main__':
+    # Daemonize.
+    d = Daemonizer(cherrypy.engine)
+    d.subscribe()
+
+    # Cherrypy configuration.
+    cherrypy.log.screen = False
+    cherrypy.log.access_file = SERVICE_LOG_FILE
+    cherrypy.log.error_file = SERVICE_LOG_FILE
+    cherrypy.server.socket_host = SERVICE_ON_IP
+    cherrypy.server.socket_port = SERVICE_ON_PORT
+
+    # Start.
+    cherrypy.quickstart(ThirstNotifier(), SERVICE_ON_MOUNT_POINT)
