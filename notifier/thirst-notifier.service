@@ -2,7 +2,7 @@
 Description=Notifier Service of Thirst
 
 [Service]
-Type=forking
+Type=simple
 ExecStart=/usr/bin/python /root/thirst-notifier.py
 StandardOutput=null
 
