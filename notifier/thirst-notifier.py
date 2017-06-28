@@ -1,7 +1,6 @@
 import sys
 import cherrypy
 import subprocess
-from cherrypy.process.plugins import Daemonizer
 
 # Service parameters
 SERVICE_ON_IP = "0.0.0.0"
@@ -129,10 +128,6 @@ class ThirstNotifier(object):
                 return {"ok": 1, "status": unicode(status)}
 
 if __name__ == '__main__':
-    # Daemonize.
-    d = Daemonizer(cherrypy.engine)
-    d.subscribe()
-
     # Cherrypy configuration.
     cherrypy.log.screen = False
     cherrypy.log.access_file = SERVICE_LOG_FILE
