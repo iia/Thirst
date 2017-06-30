@@ -23,7 +23,7 @@ config_t config_default = {
 	.the_plant_threshold_percent = 5,
 	.the_plant_threshold_lt_gt = CONFIG_THRESHLOD_LT,
 	.registered_value = 0,
-	.the_plant_check_frequency = 21600, // 1 day in 4 second units.
+	//.the_plant_check_frequency = 21600, // 1 day in 4 second units.
 
 	// Notification configuration.
 	.notification_email = "\0",
@@ -65,7 +65,8 @@ cb_sock_disconnect(void *arg) {
 
 	os_printf("\n[+] DBG: Going to deep sleep mode\n");
 
-	system_deep_sleep(DEEP_SLEEP_1_SEC * 8);
+	//system_deep_sleep(DEEP_SLEEP_1_SEC * 8);
+	system_deep_sleep(DEEP_SLEEP_HALF_HOUR);
 }
 
 void ICACHE_FLASH_ATTR
@@ -171,12 +172,13 @@ do_get_default_plant_name(char *default_plant_name, uint8_t len) {
 }
 
 bool ICACHE_FLASH_ATTR
-do_save_current_config_to_flash(bool do_timer_reset) {
+do_save_current_config_to_flash(/*bool do_timer_reset*/) {
 	uint32_t data_rtc = 0;
 
 	// Generate checksum of the current config first.
 	config_current->config_hash_pearson = do_get_hash_pearson((uint8_t *)config_current);
 
+	/*
 	if(do_timer_reset) {
 		if(system_rtc_mem_write(MEM_ADDR_RTC, &data_rtc, 4)) {
 			#if (ENABLE_DEBUG == 1)
@@ -198,6 +200,7 @@ do_save_current_config_to_flash(bool do_timer_reset) {
 			os_printf("\n[+] DBG: Not resetting timer state\n");
 		#endif
 	}
+	*/
 
 	#if(ENABLE_DEBUG == 1)
 		os_printf("\n[+] DBG: Saving current configuration to flash memory\n");
@@ -209,7 +212,7 @@ do_save_current_config_to_flash(bool do_timer_reset) {
 		os_printf("\nconfig_current->the_plant_threshold_percent = %d", config_current->the_plant_threshold_percent);
 		os_printf("\nconfig_current->the_plant_threshold_lt_gt = %d", config_current->the_plant_threshold_lt_gt);
 		os_printf("\nconfig_current->registered_value = %d", config_current->registered_value);
-		os_printf("\nconfig_current->the_plant_check_frequency = %d", config_current->the_plant_check_frequency);
+		//os_printf("\nconfig_current->the_plant_check_frequency = %d", config_current->the_plant_check_frequency);
 		os_printf("\nconfig_current->notification_email = %s", config_current->notification_email);
 		os_printf("\nconfig_current->notification_email_subject = %s", config_current->notification_email_subject);
 		os_printf("\nconfig_current->notification_email_message = %s\n", config_current->notification_email_message);
@@ -434,7 +437,8 @@ do_read_adc(void) {
 			os_printf("\n[+] DBG: Going to deep sleep mode\n");
 		#endif
 
-		system_deep_sleep(DEEP_SLEEP_1_SEC * 8);
+		//system_deep_sleep(DEEP_SLEEP_1_SEC * 8);
+		system_deep_sleep(DEEP_SLEEP_HALF_HOUR);
 	}
 }
 
@@ -526,7 +530,7 @@ void ICACHE_FLASH_ATTR
 do_read_counter_value_from_rtc_mem(void) {
 	uint32_t data_rtc, time_duration = 0;
 
-	time_duration = config_current->the_plant_check_frequency;
+	//time_duration = config_current->the_plant_check_frequency;
 
 	// RTC memory operations.
 	if(system_rtc_mem_read(MEM_ADDR_RTC, &data_rtc, 4)) {
@@ -534,7 +538,9 @@ do_read_counter_value_from_rtc_mem(void) {
 			os_printf("\n[+] DBG: RTC memory read = %d\n", data_rtc);
 		#endif
 
-		if(data_rtc < time_duration) {
+		//if(data_rtc < time_duration) {
+		// Half hour deep sleep duration 48 times = 1 day.
+		if(data_rtc < 48) {
 			data_rtc++;
 
 			if(system_rtc_mem_write(MEM_ADDR_RTC, &data_rtc, 4)) {
@@ -542,7 +548,8 @@ do_read_counter_value_from_rtc_mem(void) {
 					os_printf("\n[+] DBG: RTC count up and write = %d\n", data_rtc);
 				#endif
 
-				system_deep_sleep(DEEP_SLEEP_1_SEC * 8);
+				//system_deep_sleep(DEEP_SLEEP_1_SEC * 8);
+				system_deep_sleep(DEEP_SLEEP_HALF_HOUR);
 			}
 			else {
 				#if (ENABLE_DEBUG == 1)
@@ -610,6 +617,7 @@ cb_system_init_done(void) {
 
 	#if (ENABLE_DEBUG == 1)
 		os_printf("\n[+] DBG: Configuration reading successful\n");
+		os_printf("\n[+] DBG: Waiting for configuration mode pin state change\n");
 	#endif
 
 	// Configure configuration mode selector GPIO pin as input.
@@ -617,15 +625,10 @@ cb_system_init_done(void) {
 	gpio_output_set(0, 0, 0, GPIO_I_BIT_CONFIG_MODE);
 	PIN_PULLUP_EN(GPIO_I_CONFIG_MODE);
 
-	// Blink rapidly for 2 seconds.
-	for(i = 0; i < 16; i++) {
-		do_led_blue_turn_off();
-		os_delay_us(64000);
-		do_led_blue_turn_on();
-		os_delay_us(64000);
+	// Wait for 2 seconds.
+	for(i = 0; i < 2; i++) {
+		os_delay_us(1000000);
 	}
-
-	do_led_blue_turn_off();
 
 	/*
 	 * Check whether to switch to configuration mode or not.

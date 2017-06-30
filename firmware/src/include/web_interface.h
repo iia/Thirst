@@ -29,6 +29,7 @@ static const char *fmt_response_json_request_get_settings = \
 \"data\":%s \
 }";
 
+/*
 static const char *fmt_get_settings_data = \
 "{\
 \"the_plant_name\":\"%s\", \
@@ -43,9 +44,21 @@ static const char *fmt_get_settings_data = \
 \"notification_email_subject\":\"%s\", \
 \"notification_email_message\":\"%s\"\
 }";
+*/
 
-int ICACHE_FLASH_ATTR
-cb_timer_deep_sleep(void);
+static const char *fmt_get_settings_data = \
+"{\
+\"the_plant_name\":\"%s\", \
+\"the_plant_configuration_password\":\"%s\", \
+\"the_plant_wifi_ap\":\"%s\", \
+\"the_plant_wifi_ap_password\":\"%s\", \
+\"the_plant_threshold_percent\":%d, \
+\"the_plant_threshold_lt_gt\":%d, \
+\"registered_value\":%d, \
+\"notification_email\":\"%s\", \
+\"notification_email_subject\":\"%s\", \
+\"notification_email_message\":\"%s\"\
+}";
 
 int ICACHE_FLASH_ATTR
 cgi_root(HttpdConnData *connection_data, char *token, void **arg);

@@ -6,7 +6,7 @@ uint32_t index_buffer_post_form = 0;
 
 int ICACHE_FLASH_ATTR
 cb_timer_deep_sleep(void) {
-	system_deep_sleep(DEEP_SLEEP_1_SEC);
+	system_restart();
 }
 
 int ICACHE_FLASH_ATTR
@@ -83,7 +83,7 @@ cgi_get_settings(HttpdConnData *connection_data) {
 		config_current->the_plant_threshold_percent,
 		config_current->the_plant_threshold_lt_gt,
 		do_get_sensor_reading(ADC_SAMPLE_SIZE),
-		config_current->the_plant_check_frequency,
+		//config_current->the_plant_check_frequency,
 		config_current->notification_email,
 		config_current->notification_email_subject,
 		config_current->notification_email_message);
@@ -152,9 +152,9 @@ cgi_save_settings(HttpdConnData *connection_data) {
 	char the_plant_threshold_percent[8];
 	char the_plant_threshold_lt_gt[4];
 	char registered_value[8];
-	char the_plant_check_frequency[8];
+	//char the_plant_check_frequency[8];
 	bool do_timer_reset = true;
-	char the_plant_reset_current_timer_state[2];
+	//char the_plant_reset_current_timer_state[2];
 	char notification_email[CONFIG_NOTIFICATION_EMAIL_LEN+2];
 	char notification_email_subject[CONFIG_NOTIFICATION_SUBJECT_LEN+2];
 	char notification_email_message[CONFIG_NOTIFICATION_MESSAGE_LEN+2];
@@ -304,6 +304,7 @@ cgi_save_settings(HttpdConnData *connection_data) {
 		return HTTPD_CGI_DONE;
 	}
 
+	/*
 	if((httpdFindArg(data, "the_plant_check_frequency", the_plant_check_frequency, sizeof(the_plant_check_frequency))) > 0) {
 		config_current->the_plant_check_frequency = (uint32_t)strtoul(the_plant_check_frequency, NULL, 10);
 		config_current->the_plant_check_frequency *= 8;
@@ -318,7 +319,9 @@ cgi_save_settings(HttpdConnData *connection_data) {
 
 		return HTTPD_CGI_DONE;
 	}
+	*/
 
+	/*
 	if((httpdFindArg(data, "the_plant_reset_current_timer_state",
 	   the_plant_reset_current_timer_state, sizeof(the_plant_reset_current_timer_state))) > 0) {
 		uint32_t reset = (uint32_t)strtoul(the_plant_reset_current_timer_state, NULL, 10);
@@ -339,6 +342,7 @@ cgi_save_settings(HttpdConnData *connection_data) {
 
 		return HTTPD_CGI_DONE;
 	}
+	*/
 
 	if((httpdFindArg(data, "notification_email", notification_email, sizeof(notification_email))) > 0) {
 		os_memcpy(config_current->notification_email, notification_email, sizeof(notification_email));
@@ -391,13 +395,11 @@ cgi_save_settings(HttpdConnData *connection_data) {
 			REQUEST_JSON_SAVE_SETTINGS, JSON_STATUS_OK, "\0");
 
 		/*
-		 * Sometimes doesn't boot properly after restart with system_restart().
-		 *
-		 * Seems like this is caused by the built-in UART of the board. So we deep sleep
-		 * for 2 seconds and wake up instead of restarting.
+		 * Schedule a system restart but ensure that before sleeping there is enough
+		 * time to send the response.
 		 */
 		os_timer_setfn(&timer_generic_software, (os_timer_func_t *)cb_timer_deep_sleep, NULL);
-		os_timer_arm(&timer_generic_software, 4000, false); // Deep sleep after 4 seconds.
+		os_timer_arm(&timer_generic_software, 4000, false); // Restat after 4 seconds.
 	}
 	else {
 		os_sprintf(buffer_response, fmt_response_json_request_save_settings,

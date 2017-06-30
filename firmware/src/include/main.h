@@ -3,10 +3,11 @@
 #include "espconn.h"
 #include "gpio.h"
 
-#define ENABLE_DEBUG 0
+#define ENABLE_DEBUG 1
 #define MEM_ADDR_RTC 0x40
 #define ADC_SAMPLE_SIZE 4 // Sampling ADC takes time increasing this causes WDT to reset.
-#define DEEP_SLEEP_1_SEC 1000000
+//#define DEEP_SLEEP_1_SEC 1000000
+#define DEEP_SLEEP_HALF_HOUR 1800000000
 #define UART_BIT_RATE UART_CLK_FREQ/BIT_RATE_115200
 #define GPIO_O_BIT_LED_BLUE BIT2
 #define GPIO_O_FUNC_LED_BLUE FUNC_GPIO2
@@ -133,7 +134,7 @@ void ICACHE_FLASH_ATTR
 do_get_default_plant_name(char *default_plant_name, uint8_t len);
 
 bool ICACHE_FLASH_ATTR
-do_save_current_config_to_flash(bool do_timer_reset);
+do_save_current_config_to_flash(/*bool do_timer_reset*/);
 
 uint32_t ICACHE_FLASH_ATTR
 do_get_sensor_reading(uint32_t adc_sample_size);

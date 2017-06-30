@@ -290,6 +290,7 @@
                   </div>
                 </div>
 
+                <!--
                 <div class="row form-group">
                   <label class="col-sm-3 control-label" for="the_plant_check_frequency">
                     Check Frequency:
@@ -326,6 +327,8 @@
                       </label>
                   </div>
                 </div>
+                -->
+
             </div>
           </div>
 
@@ -547,7 +550,7 @@
     var the_plant_threshold_percent = $('#the_plant_threshold_percent').val();
     var the_plant_threshold_lt_gt = $('#the_plant_threshold_lt_gt').val();
     var registered_value = $('#registered_value').val();
-    var the_plant_check_frequency = $('#the_plant_check_frequency').val();
+    //var the_plant_check_frequency = $('#the_plant_check_frequency').val();
     var notification_email = $('#notification_email').val();
     var notification_email_subject = $('#notification_email_subject').val();
     var notification_email_message = $('#notification_email_message').val();
@@ -600,6 +603,7 @@
       $('#hb_the_plant_threshold_percent').addClass('hidden');
     }
 
+    /*
     if(the_plant_check_frequency < 1 || the_plant_check_frequency > 10080) {
         verified = false;
         $('#hb_the_plant_check_frequency').removeClass('hidden');
@@ -607,6 +611,7 @@
     else {
       $('#hb_the_plant_check_frequency').addClass('hidden');
     }
+    */
 
     // TODO: Add more detailed email address check.
     if(notification_email.length < 1 || notification_email.length > 254 ||
@@ -645,7 +650,7 @@
     $('#the_plant_threshold_percent').val(data.the_plant_threshold_percent);
     $('#the_plant_threshold_lt_gt').val(data.the_plant_threshold_lt_gt);
     $('#registered_value').val(data.registered_value);
-    $('#the_plant_check_frequency').val(data.the_plant_check_frequency / 8);
+    //$('#the_plant_check_frequency').val(data.the_plant_check_frequency / 8);
     $('#notification_email').val(data.notification_email);
     $('#notification_email_subject').val(data.notification_email_subject);
     $('#notification_email_message').val(data.notification_email_message);
@@ -680,6 +685,7 @@
   function saveSettings(e) {
     var serialized_form_data = '&' + $('#form_settings').serialize() + '&';
 
+    /*
     if (serialized_form_data.indexOf('the_plant_reset_current_timer_state') === -1) {
       serialized_form_data += 'the_plant_reset_current_timer_state=0&'
     }
@@ -687,6 +693,7 @@
       serialized_form_data = serialized_form_data.replace('the_plant_reset_current_timer_state=on',
                                                           'the_plant_reset_current_timer_state=1');
     }
+    */
 
     $.ajax({
       type: 'POST',
