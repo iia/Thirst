@@ -1,3 +1,4 @@
+import os
 import sys
 import cherrypy
 import subprocess
@@ -6,14 +7,26 @@ import subprocess
 SERVICE_ON_IP = "0.0.0.0"
 SERVICE_ON_PORT = 4200
 SERVICE_ON_MOUNT_POINT = "/thirst/notifier"
-SERVICE_LOG_FILE = "/var/log/thirst-notifier.log"
 
 # SMTP server parameters.
-SMTP_SERVER = "SMTP_SERVER"
-SMTP_PORT = 25
-SMTP_USER = "SMTP_USER"
-SMTP_PASSWORD = "SMTP_PASSWORD"
-SMTP_USE_TLS = "yes"
+SMTP_SERVER   = os.environ['THIRST_NOTIFIER_SMTP_SERVER']
+SMTP_PORT     = os.environ['THIRST_NOTIFIER_SMTP_PORT']
+SMTP_USER     = os.environ['THIRST_NOTIFIER_SMTP_USER']
+SMTP_PASSWORD = os.environ['THIRST_NOTIFIER_SMTP_PASSWORD']
+SMTP_USE_TLS  = os.environ['THIRST_NOTIFIER_SMTP_USE_TLS']
+
+if not SMTP_SERVER or \
+   SMTP_SERVER == "" or \
+   not SMTP_PORT or \
+   SMTP_PORT == "" or \
+   not SMTP_USER or \
+   SMTP_USER == "" or \
+   not SMTP_PASSWORD or \
+   SMTP_PASSWORD == "" or \
+   not SMTP_USE_TLS or \
+   SMTP_USE_TLS == "":
+      print "Error: Environment variables not properly set"
+      exit(1)
 
 class ThirstNotifier(object):
     def verify_request(self, request):
@@ -129,9 +142,6 @@ class ThirstNotifier(object):
 
 if __name__ == '__main__':
     # Cherrypy configuration.
-    cherrypy.log.screen = False
-    cherrypy.log.access_file = SERVICE_LOG_FILE
-    cherrypy.log.error_file = SERVICE_LOG_FILE
     cherrypy.server.socket_host = SERVICE_ON_IP
     cherrypy.server.socket_port = SERVICE_ON_PORT
 
