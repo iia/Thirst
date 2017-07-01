@@ -89,7 +89,7 @@ Configuring the System
 ----------------------
 
 To switch the device into configuration mode follow the instructions described
-in the Button Functions section.
+in the **Button Functions** section.
 
 <p align="center">
     <img align="center" src="https://github.com/iia/Thirst/blob/master/img/configuration_interface.png" width="" height="" />
