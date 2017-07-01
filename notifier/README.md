@@ -15,7 +15,7 @@ Executing the Docker Image
 --------------------------
 The generated Docker image can be executed using the following command,
 
-        sudo docker run -i -t -p 4200:4200 --env-file thirst-notifier.env thirst-notifier:latest
+        sudo docker run -i -t -d -p 4200:4200 --env-file thirst-notifier.env thirst-notifier:latest
 
 Variables must be provided in the **thirst-notifier.env** file which are essential
 for the Docker container.
