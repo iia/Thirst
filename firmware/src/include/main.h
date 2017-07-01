@@ -3,7 +3,7 @@
 #include "espconn.h"
 #include "gpio.h"
 
-#define ENABLE_DEBUG 1
+#define ENABLE_DEBUG 0
 #define MEM_ADDR_RTC 0x40
 #define ADC_SAMPLE_SIZE 4 // Sampling ADC takes time increasing this causes WDT to reset.
 //#define DEEP_SLEEP_1_SEC 1000000
