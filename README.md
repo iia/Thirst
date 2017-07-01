@@ -10,10 +10,11 @@ check the soil moisture once every day and notify the user is needed.
 Hardware
 --------
 
-The hardware is based on `Seeed Studio Wio Node
-<https://www.seeedstudio.com/Wio-Node-p-2637.html>`_, `Grove Moisture Sensor
-<https://www.seeedstudio.com/Grove---Moisture-Sensor-p-955.html>`_ and a LiPo
-battery with JST connector.
+The hardware is based on,
+
+    * Seeed Studio Wio Node (https://www.seeedstudio.com/Wio-Node-p-2637.html)
+    * Grove Moisture Sensor (https://www.seeedstudio.com/Grove---Moisture-Sensor-p-955.html)
+    * LiPo battery with JST connector
 
 <p align="center">
     <img align="center" src="https://github.com/iia/Thirst/blob/master/img/hardware.jpg" width="350" height="450" />
@@ -88,7 +89,7 @@ Configuring the System
 ----------------------
 
 To switch the device into configuration mode follow the instructions described
-in the Button Functions section.
+in the `Button Functions`_ section.
 
 <p align="center">
     <img align="center" src="https://github.com/iia/Thirst/blob/master/img/configuration_interface.png" width="" height="" />
