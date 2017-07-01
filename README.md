@@ -1,19 +1,18 @@
 Thirst
 ======
 
-Thirst is one of my personal projects for fun. Thirst is a system that can monitor
-soil moisture and send notifications via email in case the moisture is above or
-below a pre-configured threshold. The main purpose of this system is to monitor
-plants and when they might need water. Particularly useful for people who forget
-to water their plants. This system will check the soil moisture once every day
-and notify the user is needed.
+Thirst is a system that can monitor soil moisture and send notifications via
+email in case the moisture is above or below a pre-configured threshold. The
+main purpose of this system is to monitor plants and when they might need water.
+Particularly useful for people who forget to water their plants. This system will
+check the soil moisture once every day and notify the user is needed.
 
 Hardware
 --------
 
 The hardware is based on `Seeed Studio Wio Node
-<https://www.seeedstudio.com/Wio-Node-p-2637.html>_`, `Grove Moisture Sensor
-<https://www.seeedstudio.com/Grove---Moisture-Sensor-p-955.html>_` and a LiPo
+<https://www.seeedstudio.com/Wio-Node-p-2637.html>`_, `Grove Moisture Sensor
+<https://www.seeedstudio.com/Grove---Moisture-Sensor-p-955.html>`_ and a LiPo
 battery with JST connector.
 
 <p align="center">
@@ -34,13 +33,11 @@ Button Functions
 
 The following table describes the functionalities of the buttons.
 
-=====  =============  ==================
-Reset  Function       State
-=====  =============  ==================
-Click  -              Reset
-Click  Pressed        Flashing Mode
-Click  Delayed Press  Configuration Mode
-=====  =============  ==================
+| Reset | Function      | State              |
+| ----- | ------------- | ------------------ |
+| Click | -             | Reset              |
+| Click | Pressed       | Flashing Mode      |
+| Click | Delayed Press | Configuration Mode |
 
 To enter configuration mode reset the device by clicking the reset button and
 just after resetting press and hold the function button until the blue LED turns
