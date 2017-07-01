@@ -24,10 +24,6 @@ As an alternative to building and deploying the notifier service you can pull th
 Docker image from Docker hub and execute the image on any machine with a working
 Docker installation.
 
-To achieve that execute the following command,
-
-        sudo docker run iia86/thirst-notifier:latest
-
 Note that if you want to deploy the notifier service like this to a machine of
 your choice you have to put a custom firmware on the devices that you are using.
 In this case you have to modify **#define FMT_NOTIFIER_HTTP_HEADER** in the file
