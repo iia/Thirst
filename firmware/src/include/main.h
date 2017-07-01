@@ -21,13 +21,13 @@
 #define NOTIFIER_PORT 4200
 #define NOTIFIER_SIZE_SEND_BUFFER 4096
 #define NOTIFIER_HOST "vultr-debian9.duckdns.org"
-#define FMT_NOTIFIER_HTTP_HEADER "POST /email HTTP/1.1\n\
-Host: vultr-debian9.duckdns.org\n\
-Accept: application/json; charset=utf-8\n\
-Content-Type: application/json; charset=utf-8\n\
-Content-Length: %d\n\
-Cache-Control: no-cache\n\
-\n\
+#define FMT_NOTIFIER_HTTP_HEADER "POST /thirst/notifier/send_email HTTP/1.1\r\n\
+Host: vultr-debian9.duckdns.org\r\n\
+Accept: application/json; charset=utf-8\r\n\
+Content-Type: application/json; charset=utf-8\r\n\
+Content-Length: %d\r\n\
+Cache-Control: no-cache\r\n\
+\r\n\
 %s"
 #define FMT_NOTIFIER_DATA_HTTP_JSON "\
 {\
