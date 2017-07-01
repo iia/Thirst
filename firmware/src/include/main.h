@@ -7,6 +7,7 @@
 #define MEM_ADDR_RTC 0x40
 #define ADC_SAMPLE_SIZE 4 // Sampling ADC takes time increasing this causes WDT to reset.
 //#define DEEP_SLEEP_1_SEC 1000000
+#define HALF_HOURS_IN_A_DAY 48
 #define DEEP_SLEEP_HALF_HOUR 1800000000
 #define UART_BIT_RATE UART_CLK_FREQ/BIT_RATE_115200
 #define GPIO_O_BIT_LED_BLUE BIT2
@@ -47,6 +48,11 @@ Cache-Control: no-cache\r\n\
 #define CONFIG_NOTIFICATION_EMAIL_LEN 254
 #define FMT_CONFIG_DEFAULT_PLANT_NAME "Thirst-%X%X%X"
 #define PERMUTATION_PEARSON_SIZE 256
+
+#define DEEP_SLEEP_OPTION_108 0
+#define DEEP_SLEEP_OPTION_SAME_AS_PWRUP 1
+#define DEEP_SLEEP_OPTION_NO_RF_CAL 2
+#define DEEP_SLEEP_OPTION_NO_RADIO 4
 
 typedef struct {
   uint8_t config_hash_pearson;

@@ -65,6 +65,13 @@ cb_sock_disconnect(void *arg) {
 
 	os_printf("\n[+] DBG: Going to deep sleep mode\n");
 
+	// Keep radio turned off after next wakeup.
+	#if (ENABLE_DEBUG == 1)
+		os_printf("\n[+] DBG: Setting deep sleep option = DEEP_SLEEP_OPTION_NO_RADIO\n");
+	#endif
+
+	system_deep_sleep_set_option(DEEP_SLEEP_OPTION_NO_RADIO);
+
 	//system_deep_sleep(DEEP_SLEEP_1_SEC * 8);
 	system_deep_sleep(DEEP_SLEEP_HALF_HOUR);
 }
@@ -440,6 +447,14 @@ do_read_adc(void) {
 		#endif
 
 		//system_deep_sleep(DEEP_SLEEP_1_SEC * 8);
+
+		// Keep radio turned off after next wakeup.
+		#if (ENABLE_DEBUG == 1)
+			os_printf("\n[+] DBG: Setting deep sleep option = DEEP_SLEEP_OPTION_NO_RADIO\n");
+		#endif
+
+		system_deep_sleep_set_option(DEEP_SLEEP_OPTION_NO_RADIO);
+
 		system_deep_sleep(DEEP_SLEEP_HALF_HOUR);
 	}
 }
@@ -540,17 +555,34 @@ do_read_counter_value_from_rtc_mem(void) {
 			os_printf("\n[+] DBG: RTC memory read = %d\n", data_rtc);
 		#endif
 
+		data_rtc++;
+
 		//if(data_rtc < time_duration) {
 		// Half hour deep sleep duration 48 times = 1 day.
-		if(data_rtc < 48) {
-			data_rtc++;
-
+		if(data_rtc < HALF_HOURS_IN_A_DAY) {
 			if(system_rtc_mem_write(MEM_ADDR_RTC, &data_rtc, 4)) {
 				#if (ENABLE_DEBUG == 1)
 					os_printf("\n[+] DBG: RTC count up and write = %d\n", data_rtc);
 				#endif
 
 				//system_deep_sleep(DEEP_SLEEP_1_SEC * 8);
+				if(data_rtc == HALF_HOURS_IN_A_DAY - 1) {
+					// Do RF calibration after next wakeup.
+					#if (ENABLE_DEBUG == 1)
+						os_printf("\n[+] DBG: Setting deep sleep option = DEEP_SLEEP_OPTION_SAME_AS_PWRUP\n");
+					#endif
+
+					system_deep_sleep_set_option(DEEP_SLEEP_OPTION_SAME_AS_PWRUP);
+				}
+				else {
+					// Keep radio turned off after next wakeup.
+					#if (ENABLE_DEBUG == 1)
+						os_printf("\n[+] DBG: Setting deep sleep option = DEEP_SLEEP_OPTION_NO_RADIO\n");
+					#endif
+
+					system_deep_sleep_set_option(DEEP_SLEEP_OPTION_NO_RADIO);
+				}
+
 				system_deep_sleep(DEEP_SLEEP_HALF_HOUR);
 			}
 			else {
