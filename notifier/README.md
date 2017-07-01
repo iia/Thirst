@@ -11,18 +11,26 @@ A Docker image of the notifier service can be built with the following command,
 
     sudo docker build -t thirst-notifier:latest .
 
+As an alternative to building and deploying the notifier service you can pull the
+Docker image from Docker Hub and execute the image on any machine with a working
+Docker installation. In this case use the following command to pull the image,
+
+        sudo docker pull iia86/thirst-notifier:latest
+
 Executing the Docker Image
 --------------------------
-The generated Docker image can be executed using the following command,
+If you built the Docker image locally then the generated Docker image can be
+executed using the following command,
 
         sudo docker run -i -t -d -p 4200:4200 --env-file thirst-notifier.env thirst-notifier:latest
 
+If the image was pulled from the registry then use the following command to
+execute the Docker image,
+
+        sudo docker run -i -t -d -p 4200:4200 --env-file thirst-notifier.env iia86/thirst-notifier:latest
+
 Variables must be provided in the **thirst-notifier.env** file which are essential
 for the Docker container.
-
-As an alternative to building and deploying the notifier service you can pull the
-Docker image from Docker hub and execute the image on any machine with a working
-Docker installation.
 
 Note that if you want to deploy the notifier service like this to a machine of
 your choice you have to put a custom firmware on the devices that you are using.
