@@ -46,20 +46,20 @@ on.
 LED Indicators
 --------------
 
-Red:
-    * Turned on, reset button is pressed and in reset held state.
+* Red
+    - Turned on, reset button is pressed and in reset held state.
 
-Green:
-    * Blinking, there is no battery present but the system is powered by the
+* Green
+    - Blinking, there is no battery present but the system is powered by the
       USB port.
-    * Turned on, battery is being charged through the power provided
+    - Turned on, battery is being charged through the power provided
       by the USB port. In this state the system uses power from the USB port.
-    * Turned off, battery is fully charged or operating from battery power
+    - Turned off, battery is fully charged or operating from battery power
       and no USB power present.
 
-Blue:
-    * Blinking, in error state.
-    * Turned on, in configuration mode.
+* Blue
+    - Blinking, in error state.
+    - Turned on, in configuration mode.
 
 Compiling and Flashing the Firmware
 -----------------------------------
