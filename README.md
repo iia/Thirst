@@ -12,8 +12,8 @@ Hardware
 
 The hardware is based on,
 
- * Seeed Studio Wio Node (https://www.seeedstudio.com/Wio-Node-p-2637.html)
- * Grove Moisture Sensor (https://www.seeedstudio.com/Grove---Moisture-Sensor-p-955.html)
+ * [Seeed Studio Wio Node](https://www.seeedstudio.com/Wio-Node-p-2637.html)
+ * [Grove Moisture Sensor](https://www.seeedstudio.com/Grove---Moisture-Sensor-p-955.html)
  * LiPo battery with JST connector
 
 <p align="center">
@@ -89,7 +89,7 @@ Configuring the System
 ----------------------
 
 To switch the device into configuration mode follow the instructions described
-in the `Button Functions`_ section.
+in the Button Functions section.
 
 <p align="center">
     <img align="center" src="https://github.com/iia/Thirst/blob/master/img/configuration_interface.png" width="" height="" />
