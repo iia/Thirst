@@ -18,26 +18,25 @@
 #define GPIO_O_BIT_VCC_SENSOR BIT15
 #define GPIO_O_FUNC_VCC_SENSOR FUNC_GPIO15
 #define GPIO_O_VCC_SENSOR PERIPHS_IO_MUX_MTDO_U
-#define POSTMARK_API_PORT 80
-#define POSTMARK_SIZE_SEND_BUFFER 4096
-#define POSTMARK_API_HOST "api.postmarkapp.com"
-#define POSTMARK_API_TOKEN "cd636c0b-9c23-42f1-8c62-6bba620f079c"
-#define FMT_POSTMARK_HTTP_HEADER "POST /email HTTP/1.1\n\
-Host: api.postmarkapp.com\n\
+#define NOTIFIER_PORT 4200
+#define NOTIFIER_SIZE_SEND_BUFFER 4096
+#define NOTIFIER_HOST "vultr-debian9.duckdns.org"
+#define FMT_NOTIFIER_HTTP_HEADER "POST /email HTTP/1.1\n\
+Host: vultr-debian9.duckdns.org\n\
 Accept: application/json; charset=utf-8\n\
 Content-Type: application/json; charset=utf-8\n\
 Content-Length: %d\n\
-X-Postmark-Server-Token: %s\n\
 Cache-Control: no-cache\n\
 \n\
 %s"
-#define FMT_POSTMARK_DATA_HTTP_JSON "\
+#define FMT_NOTIFIER_DATA_HTTP_JSON "\
 {\
-\"From\": \"ishraq@tinkerforge.com\",\
-\"To\": \"%s\",\
-\"Subject\": \"%s\",\
-\"HtmlBody\": \"%s\"\
+\"from\": \"thirst.the.project@gmail.com\",\
+\"to\": \"%s\",\
+\"subject\": \"%s\",\
+\"message\": \"%s\"\
 }"
+
 #define CONFIG_SECTOR_FLASH 0x3FA // 5th sector from the last sector of 4MB flash.
 #define CONFIG_SSID_LEN 32
 #define CONFIG_THRESHLOD_LT 1

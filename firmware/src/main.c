@@ -80,9 +80,9 @@ void ICACHE_FLASH_ATTR
 cb_sock_connect(void *arg) {
 	char buffer_json_data[1024];
 	struct espconn *sock = (struct espconn *)arg;
-	char *buffer_message = (char *)malloc(POSTMARK_SIZE_SEND_BUFFER);
+	char *buffer_message = (char *)malloc(NOTIFIER_SIZE_SEND_BUFFER);
 
-	os_bzero(buffer_message, POSTMARK_SIZE_SEND_BUFFER);
+	os_bzero(buffer_message, NOTIFIER_SIZE_SEND_BUFFER);
 
 	#if (ENABLE_DEBUG == 1)
 		os_printf("\n[+] DBG: cb_sock_connect()\n");
@@ -92,12 +92,14 @@ cb_sock_connect(void *arg) {
 	espconn_regist_recvcb(sock, cb_sock_recv);
 	espconn_regist_disconcb(sock, cb_sock_disconnect);
 
-	os_sprintf(buffer_json_data, FMT_POSTMARK_DATA_HTTP_JSON,
+	os_sprintf(buffer_json_data, FMT_NOTIFIER_DATA_HTTP_JSON,
 		config_current->notification_email, config_current->notification_email_subject,
 		config_current->notification_email_message);
 
-	os_sprintf(buffer_message, FMT_POSTMARK_HTTP_HEADER,
-		os_strlen(buffer_json_data), POSTMARK_API_TOKEN, buffer_json_data);
+	os_sprintf(buffer_message,
+						 FMT_NOTIFIER_HTTP_HEADER,
+						 os_strlen(buffer_json_data),
+						 buffer_json_data);
 
 	#if (ENABLE_DEBUG == 1)
 		os_printf("\n[+] DBG: Sending request, message = %s\n", buffer_message);
@@ -134,7 +136,7 @@ cb_dns_resolved(const char *hostname, ip_addr_t *ip_resolved, void *arg) {
 		sock->proto.tcp = &sock_tcp;
 		sock->type = ESPCONN_TCP;
 		sock->state = ESPCONN_NONE;
-		sock->proto.tcp->remote_port = POSTMARK_API_PORT;
+		sock->proto.tcp->remote_port = NOTIFIER_PORT;
 		sock->proto.tcp->local_port = espconn_port();
 		os_memcpy(sock->proto.tcp->remote_ip, ip_server, 4);
 
@@ -255,7 +257,7 @@ cb_wifi_event(System_Event_t *evt) {
 			os_printf("\n[+] DBG: Got IP\n");
 		#endif
 
-		e = espconn_gethostbyname(&sock, POSTMARK_API_HOST, &ip_dns_resolved,
+		e = espconn_gethostbyname(&sock, NOTIFIER_HOST, &ip_dns_resolved,
 			cb_dns_resolved);
 
 		switch(e) {
