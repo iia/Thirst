@@ -12,9 +12,9 @@ Hardware
 
 The hardware is based on,
 
-    * Seeed Studio Wio Node (https://www.seeedstudio.com/Wio-Node-p-2637.html)
-    * Grove Moisture Sensor (https://www.seeedstudio.com/Grove---Moisture-Sensor-p-955.html)
-    * LiPo battery with JST connector
+ * Seeed Studio Wio Node (https://www.seeedstudio.com/Wio-Node-p-2637.html)
+ * Grove Moisture Sensor (https://www.seeedstudio.com/Grove---Moisture-Sensor-p-955.html)
+ * LiPo battery with JST connector
 
 <p align="center">
     <img align="center" src="https://github.com/iia/Thirst/blob/master/img/hardware.jpg" width="350" height="450" />
