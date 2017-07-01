@@ -73,6 +73,10 @@ cb_sock_disconnect(void *arg) {
 	system_deep_sleep_set_option(DEEP_SLEEP_OPTION_NO_RADIO);
 
 	//system_deep_sleep(DEEP_SLEEP_1_SEC * 8);
+
+	// Make sure the sensor is powered off.
+	do_toggle_sesnor(false);
+
 	system_deep_sleep(DEEP_SLEEP_HALF_HOUR);
 }
 
@@ -455,6 +459,9 @@ do_read_adc(void) {
 
 		system_deep_sleep_set_option(DEEP_SLEEP_OPTION_NO_RADIO);
 
+		// Make sure the sensor is powered off.
+		do_toggle_sesnor(false);
+
 		system_deep_sleep(DEEP_SLEEP_HALF_HOUR);
 	}
 }
@@ -583,6 +590,9 @@ do_read_counter_value_from_rtc_mem(void) {
 					system_deep_sleep_set_option(DEEP_SLEEP_OPTION_NO_RADIO);
 				}
 
+				// Make sure the sensor is powered off.
+				do_toggle_sesnor(false);
+
 				system_deep_sleep(DEEP_SLEEP_HALF_HOUR);
 			}
 			else {
@@ -635,6 +645,9 @@ cb_system_init_done(void) {
 	bool config_none = false;
 	uint32_t gpio_i_config_mode_value = 1;
 	struct softap_config config_ap_interface;
+
+	// Make sure the sensor is powered off.
+	do_toggle_sesnor(false);
 
 	// Must not be deallocated.
 	buffer_post_form = (char *)os_malloc(8192); // Used by web interface module.
