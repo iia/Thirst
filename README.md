@@ -16,7 +16,7 @@ The hardware is based on,
  * [Grove Moisture Sensor](https://www.seeedstudio.com/Grove---Moisture-Sensor-p-955.html)
  * LiPo battery with JST connector
 
-The noisture sensor must be connected on the PORT1 of the Wio Node.
+The moisture sensor must be connected on PORT1 of the Wio Node.
 
 <p align="center">
     <img align="center" src="https://github.com/iia/Thirst/blob/master/img/hardware.jpg" width="350" height="450" />
