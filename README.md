@@ -89,7 +89,13 @@ Configuring the System
 ----------------------
 
 To switch the device into configuration mode follow the instructions described
-in the **Button Functions** section.
+in the **Button Functions** section. In configuration mode the system presents
+a WiFi access point. Initially the name of the access point would be of form,
+**Thirst-XXX** where each **X** is a hexadecimal number and the password will
+be **1234567890**.
+
+After connecting to this access point the configuration interface will be available on
+IP address: 192.168.7.1 which can be used with a web browser.
 
 <p align="center">
     <img align="center" src="https://github.com/iia/Thirst/blob/master/img/configuration_interface.png" width="" height="" />
