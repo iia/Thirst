@@ -66,6 +66,11 @@ LED Indicators
 
 Compiling and Flashing the Firmware
 -----------------------------------
+Firmware compilation has package dependencies which can be satisfied on a Debian
+based system with the following command,
+
+    sudo apt-get install gperf bison flex texinfo help2man libtool-bin libncurses5-dev -y
+
 Before compiling the firmware the build environment must be prepared,
 
     make -C firmware/ prepare
