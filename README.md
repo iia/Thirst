@@ -69,7 +69,7 @@ Compiling and Flashing the Firmware
 Firmware compilation has package dependencies which can be satisfied on a Debian
 based system with the following command,
 
-    sudo apt-get install gperf bison flex texinfo help2man libtool-bin libncurses5-dev libpython2.7-dev yui-compressor -y
+    sudo apt-get install gperf bison flex texinfo help2man libtool-bin libncurses5-dev libpython2.7-dev yui-compressor python-serial -y
 
 Before compiling the firmware the build environment must be prepared,
 
