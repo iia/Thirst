@@ -18,7 +18,7 @@ SDK_VER = 2.0.0
 LIBESPHTTPD_BASE = libesphttpd
 
 # esptool related definitions.
-ESPTOOL ?= esptool.py
+ESPTOOL ?= tools/esptool.py
 ESPPORT ?= /dev/ttyUSB0
 
 # Project name.
