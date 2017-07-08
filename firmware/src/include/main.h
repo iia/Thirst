@@ -22,7 +22,7 @@
 #define NOTIFIER_PORT 4200
 #define NOTIFIER_SIZE_SEND_BUFFER 4096
 #define NOTIFIER_HOST "do-debian9.duckdns.org"
-#define FMT_NOTIFIER_HTTP_HEADER "POST /thirst/notifier/send_email HTTP/1.1\r\n\
+#define FMT_NOTIFIER_HTTP_HEADER "POST /notifier/email/send HTTP/1.1\r\n\
 Host: do-debian9.duckdns.org\r\n\
 Accept: application/json; charset=utf-8\r\n\
 Content-Type: application/json; charset=utf-8\r\n\
