@@ -21,9 +21,9 @@
 #define GPIO_O_VCC_SENSOR PERIPHS_IO_MUX_MTDO_U
 #define NOTIFIER_PORT 4200
 #define NOTIFIER_SIZE_SEND_BUFFER 4096
-#define NOTIFIER_HOST "do-debian9.duckdns.org"
+#define NOTIFIER_HOST "vultr-debian9.duckdns.org"
 #define FMT_NOTIFIER_HTTP_HEADER "POST /notifier/email/send HTTP/1.1\r\n\
-Host: do-debian9.duckdns.org\r\n\
+Host: vultr-debian9.duckdns.org\r\n\
 Accept: application/json; charset=utf-8\r\n\
 Content-Type: application/json; charset=utf-8\r\n\
 Content-Length: %d\r\n\
