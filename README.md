@@ -78,7 +78,7 @@ Before compiling the firmware the build environment must be prepared,
 Then patches must be applied,
 
     cd firmware/
-    patch -b -N -d libesphttpd/ -p1 < patch/libesphttpd-Makefile.patch
+    patch -b -N -d libesphttpd/ -p0 < patch/libesphttpd-Makefile.patch
 
 Then to compile the firmware,
 
