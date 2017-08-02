@@ -7,6 +7,8 @@
 #include "web_interface.h"
 
 bool state_error_led_state = true;
+uint32_t do_notification_next = 0;
+uint32_t do_notification_current = 0;
 
 /*
  * Already prepared default configuration so that it can simply copied to current
@@ -31,6 +33,101 @@ config_t config_default = {
 	.notification_email_message = "\0"
 };
 
+void ICACHE_FLASH_ATTR
+do_notification(void) {
+	struct station_config config_st_interface;
+
+	// Clear out WiFi station interface configuration storage.
+	os_bzero(&config_st_interface, sizeof(config_st_interface));
+
+	// Enable station mode.
+	wifi_set_opmode(STATION_MODE);
+
+	// WiFi station settings.
+	config_st_interface.bssid_set = 0;
+	os_memcpy(&config_st_interface.ssid, config_current->the_plant_wifi_ap,
+	os_strlen(config_current->the_plant_wifi_ap));
+	os_memcpy(&config_st_interface.password, config_current->the_plant_wifi_ap_password,
+	os_strlen(config_current->the_plant_wifi_ap_password));
+
+	// Apply WiFi settings.
+	wifi_station_set_config_current(&config_st_interface);
+
+	// Set callback for WiFi events.
+	wifi_set_event_handler_cb(cb_wifi_event);
+
+	// Enable station mode reconnect.
+	wifi_station_set_reconnect_policy(true);
+
+	// Connect WiFi in station mode.
+	if(!wifi_station_connect()) {
+		#if (ENABLE_DEBUG == 1)
+			os_printf("\n[+] DBG: WiFi station mode connect failed\n");
+		#endif
+
+		do_state_error();
+
+		return;
+	}
+}
+
+void ICACHE_FLASH_ATTR
+do_toggle_vcc_probe(bool toggle) {
+	PIN_FUNC_SELECT(GPIO_O_VCC_PROBE, GPIO_O_FUNC_VCC_PROBE);
+
+	if(toggle) {
+		gpio_output_set(GPIO_O_BIT_VCC_PROBE, 0, GPIO_O_BIT_VCC_PROBE, 0);
+	}
+	else {
+		gpio_output_set(0, GPIO_O_BIT_VCC_PROBE, GPIO_O_BIT_VCC_PROBE, 0);
+	}
+}
+
+bool ICACHE_FLASH_ATTR
+is_battery_low(uint32_t adc_sample_size) {
+	uint32_t i = 0;
+	uint32_t sum = 0;
+	uint32_t battery_voltage_reading = 0;
+	uint16_t *adc_samples = (uint16_t *)os_malloc(adc_sample_size);
+
+	#if (ENABLE_DEBUG == 1)
+		os_printf("\n[+] DBG: is_battery_low()\n");
+	#endif
+
+	do_toggle_sesnor(false);
+	do_toggle_vcc_probe(true);
+
+	os_delay_us(128);
+
+	for(i = 0; i < adc_sample_size; i++) {
+		adc_samples[i] = system_adc_read();
+	}
+
+	do_toggle_vcc_probe(false);
+
+	sum = 0;
+
+	for(i = 0; i < adc_sample_size; i++) {
+		sum = sum + adc_samples[i];
+	}
+
+	battery_voltage_reading = sum / adc_sample_size;
+
+	#if (ENABLE_DEBUG == 1)
+		os_printf("\n[+] DBG: Current battery voltage reading = %d\n",
+		          battery_voltage_reading);
+	#endif
+
+	os_free(adc_samples);
+
+	if (battery_voltage_reading < LOW_BATTERY_THRESHOLD) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
 void
 cb_timer_disconnect_sock(void) {
 	os_timer_disarm(&timer_generic_software);
@@ -45,16 +142,63 @@ cb_timer_disconnect_sock(void) {
 void ICACHE_FLASH_ATTR
 cb_sock_recv(void *arg, char *data, unsigned short length) {
 	os_timer_disarm(&timer_generic_software);
+
+	char buffer_json_data[1024];
+	char buffer_low_battery_subject[128];
+	char buffer_low_battery_message[512];
 	struct espconn *sock = (struct espconn *)arg;
+	char *buffer_message = (char *)malloc(NOTIFIER_SIZE_SEND_BUFFER);
 
 	#if (ENABLE_DEBUG == 1)
 		os_printf("\n[+] DBG: cb_sock_recv()\n");
 		os_printf("\n[+] DBG: Received length = %d, data = %s\n", length, data);
 	#endif
 
-	// Setup timer to call disconnect on the socket.
-	os_timer_setfn(&timer_generic_software, (os_timer_func_t *)cb_timer_disconnect_sock, NULL);
-	os_timer_arm(&timer_generic_software, 2000, false);
+	if (do_notification_next != 0) {
+		do_notification_next = 0;
+
+		os_sprintf(buffer_low_battery_subject,
+		           FMT_LOW_BATTERY_SUBJECT,
+		           config_current->the_plant_name);
+
+		os_sprintf(buffer_low_battery_message,
+		           FMT_LOW_BATTERY_MESSAGE,
+		           config_current->the_plant_name);
+
+		os_sprintf(buffer_json_data,
+		           FMT_NOTIFIER_DATA_HTTP_JSON,
+		           config_current->notification_email,
+		           buffer_low_battery_subject,
+		           buffer_low_battery_message);
+
+		os_sprintf(buffer_message,
+		           FMT_NOTIFIER_HTTP_HEADER,
+		           os_strlen(buffer_json_data),
+		           buffer_json_data);
+
+		#if (ENABLE_DEBUG == 1)
+			os_printf("\n[+] DBG: Sending request, message = %s\n", buffer_message);
+		#endif
+
+		// Send request.
+		if(espconn_send(sock, buffer_message, os_strlen(buffer_message))) {
+			#if (ENABLE_DEBUG == 1)
+				os_printf("\n[+] DBG: Sending data using socket failed\n");
+			#endif
+
+			os_free(buffer_message);
+
+			do_state_error();
+		}
+	}
+	else {
+		os_free(buffer_message);
+
+		// Setup timer to call disconnect on the socket.
+		os_timer_setfn(&timer_generic_software,
+		               (os_timer_func_t *)cb_timer_disconnect_sock, NULL);
+		os_timer_arm(&timer_generic_software, 2000, false);
+	}
 }
 
 void ICACHE_FLASH_ATTR
@@ -63,19 +207,19 @@ cb_sock_disconnect(void *arg) {
 		os_printf("\n[+] DBG: cb_sock_disconnect()\n");
 	#endif
 
-	os_printf("\n[+] DBG: Going to deep sleep mode\n");
-
 	// Keep radio turned off after next wakeup.
 	#if (ENABLE_DEBUG == 1)
+		os_printf("\n[+] DBG: Going to deep sleep mode\n");
 		os_printf("\n[+] DBG: Setting deep sleep option = DEEP_SLEEP_OPTION_NO_RADIO\n");
 	#endif
 
 	system_deep_sleep_set_option(DEEP_SLEEP_OPTION_NO_RADIO);
 
-	//system_deep_sleep(DEEP_SLEEP_1_SEC * 8);
-
 	// Make sure the sensor is powered off.
 	do_toggle_sesnor(false);
+
+	// Make sure VCC probe GPIO is on logic low.
+	do_toggle_vcc_probe(false);
 
 	system_deep_sleep(DEEP_SLEEP_HALF_HOUR);
 }
@@ -90,6 +234,8 @@ cb_sock_sent(void *arg) {
 void ICACHE_FLASH_ATTR
 cb_sock_connect(void *arg) {
 	char buffer_json_data[1024];
+	char buffer_low_battery_subject[128];
+	char buffer_low_battery_message[512];
 	struct espconn *sock = (struct espconn *)arg;
 	char *buffer_message = (char *)malloc(NOTIFIER_SIZE_SEND_BUFFER);
 
@@ -103,26 +249,63 @@ cb_sock_connect(void *arg) {
 	espconn_regist_recvcb(sock, cb_sock_recv);
 	espconn_regist_disconcb(sock, cb_sock_disconnect);
 
-	os_sprintf(buffer_json_data, FMT_NOTIFIER_DATA_HTTP_JSON,
-		config_current->notification_email, config_current->notification_email_subject,
-		config_current->notification_email_message);
+	if (do_notification_current == DO_NOTIFICATION_THIRST) {
+		os_sprintf(buffer_json_data,
+		           FMT_NOTIFIER_DATA_HTTP_JSON,
+		           config_current->notification_email,
+		           config_current->notification_email_subject,
+		           config_current->notification_email_message);
 
-	os_sprintf(buffer_message,
-						 FMT_NOTIFIER_HTTP_HEADER,
-						 os_strlen(buffer_json_data),
-						 buffer_json_data);
+		os_sprintf(buffer_message,
+		           FMT_NOTIFIER_HTTP_HEADER,
+		           os_strlen(buffer_json_data),
+		           buffer_json_data);
 
-	#if (ENABLE_DEBUG == 1)
-		os_printf("\n[+] DBG: Sending request, message = %s\n", buffer_message);
-	#endif
-
-	// Send request.
-	if(espconn_send(sock, buffer_message, os_strlen(buffer_message))) {
 		#if (ENABLE_DEBUG == 1)
-			os_printf("\n[+] DBG: Sending data using socket failed\n");
+			os_printf("\n[+] DBG: Sending request, message = %s\n", buffer_message);
 		#endif
 
-		do_state_error();
+		// Send request.
+		if(espconn_send(sock, buffer_message, os_strlen(buffer_message))) {
+			#if (ENABLE_DEBUG == 1)
+				os_printf("\n[+] DBG: Sending data using socket failed\n");
+			#endif
+
+			do_state_error();
+		}
+	}
+	else if (do_notification_current == DO_NOTIFICATION_LOW_BATTERY) {
+		os_sprintf(buffer_low_battery_subject,
+		           FMT_LOW_BATTERY_SUBJECT,
+		           config_current->the_plant_name);
+
+		os_sprintf(buffer_low_battery_message,
+		           FMT_LOW_BATTERY_MESSAGE,
+		           config_current->the_plant_name);
+
+		os_sprintf(buffer_json_data,
+		           FMT_NOTIFIER_DATA_HTTP_JSON,
+		           config_current->notification_email,
+		           buffer_low_battery_subject,
+		           buffer_low_battery_message);
+
+		os_sprintf(buffer_message,
+		           FMT_NOTIFIER_HTTP_HEADER,
+		           os_strlen(buffer_json_data),
+		           buffer_json_data);
+
+		#if (ENABLE_DEBUG == 1)
+			os_printf("\n[+] DBG: Sending request, message = %s\n", buffer_message);
+		#endif
+
+		// Send request.
+		if(espconn_send(sock, buffer_message, os_strlen(buffer_message))) {
+			#if (ENABLE_DEBUG == 1)
+				os_printf("\n[+] DBG: Sending data using socket failed\n");
+			#endif
+
+			do_state_error();
+		}
 	}
 
 	os_free(buffer_message);
@@ -173,47 +356,26 @@ cb_dns_resolved(const char *hostname, ip_addr_t *ip_resolved, void *arg) {
 
 void ICACHE_FLASH_ATTR
 do_get_default_plant_name(char *default_plant_name, uint8_t len) {
-  uint8_t mac_softap[6];
+	uint8_t mac_softap[6];
 
-  os_bzero(&mac_softap, sizeof(mac_softap));
-  os_bzero(default_plant_name, len);
+	os_bzero(&mac_softap, sizeof(mac_softap));
+	os_bzero(default_plant_name, len);
 
-  wifi_get_macaddr(SOFTAP_IF, mac_softap);
+	wifi_get_macaddr(SOFTAP_IF, mac_softap);
 
-  os_sprintf(default_plant_name, FMT_CONFIG_DEFAULT_PLANT_NAME,
-    mac_softap[3], mac_softap[4], mac_softap[5]);
+	os_sprintf(default_plant_name,
+	           FMT_CONFIG_DEFAULT_PLANT_NAME,
+	           mac_softap[3],
+	           mac_softap[4],
+	           mac_softap[5]);
 }
 
 bool ICACHE_FLASH_ATTR
-do_save_current_config_to_flash(/*bool do_timer_reset*/) {
+do_save_current_config_to_flash() {
 	uint32_t data_rtc = 0;
 
 	// Generate checksum of the current config first.
 	config_current->config_hash_pearson = do_get_hash_pearson((uint8_t *)config_current);
-
-	/*
-	if(do_timer_reset) {
-		if(system_rtc_mem_write(MEM_ADDR_RTC, &data_rtc, 4)) {
-			#if (ENABLE_DEBUG == 1)
-				os_printf("\n[+] DBG: Resetting timer state\n");
-			#endif
-		}
-		else {
-			#if (ENABLE_DEBUG == 1)
-				os_printf("\n[+] DBG: Failed to reset timer state\n");
-			#endif
-
-			do_state_error();
-
-			return false;
-		}
-	}
-	else {
-		#if (ENABLE_DEBUG == 1)
-			os_printf("\n[+] DBG: Not resetting timer state\n");
-		#endif
-	}
-	*/
 
 	#if(ENABLE_DEBUG == 1)
 		os_printf("\n[+] DBG: Saving current configuration to flash memory\n");
@@ -225,7 +387,6 @@ do_save_current_config_to_flash(/*bool do_timer_reset*/) {
 		os_printf("\nconfig_current->the_plant_threshold_percent = %d", config_current->the_plant_threshold_percent);
 		os_printf("\nconfig_current->the_plant_threshold_lt_gt = %d", config_current->the_plant_threshold_lt_gt);
 		os_printf("\nconfig_current->registered_value = %d", config_current->registered_value);
-		//os_printf("\nconfig_current->the_plant_check_frequency = %d", config_current->the_plant_check_frequency);
 		os_printf("\nconfig_current->notification_email = %s", config_current->notification_email);
 		os_printf("\nconfig_current->notification_email_subject = %s", config_current->notification_email_subject);
 		os_printf("\nconfig_current->notification_email_message = %s\n", config_current->notification_email_message);
@@ -268,8 +429,10 @@ cb_wifi_event(System_Event_t *evt) {
 			os_printf("\n[+] DBG: Got IP\n");
 		#endif
 
-		e = espconn_gethostbyname(&sock, NOTIFIER_HOST, &ip_dns_resolved,
-			cb_dns_resolved);
+		e = espconn_gethostbyname(&sock,
+		                          NOTIFIER_HOST,
+		                          &ip_dns_resolved,
+		                          cb_dns_resolved);
 
 		switch(e) {
 			case ESPCONN_OK: {
@@ -320,6 +483,7 @@ do_get_sensor_reading(uint32_t adc_sample_size) {
 	uint32_t sum = 0;
 	uint16_t *adc_samples = (uint16_t *)os_malloc(adc_sample_size);
 
+	do_toggle_vcc_probe(false);
 	do_toggle_sesnor(true);
 
 	os_delay_us(128);
@@ -335,6 +499,8 @@ do_get_sensor_reading(uint32_t adc_sample_size) {
 	for(i = 0; i < adc_sample_size; i++) {
 		sum = sum + adc_samples[i];
 	}
+
+	os_free(adc_samples);
 
 	return sum / adc_sample_size;
 }
@@ -354,8 +520,9 @@ void ICACHE_FLASH_ATTR
 do_read_adc(void) {
 	uint32_t average = 0;
 	uint32_t percent_change = 0;
-	bool trigger_notification = false;
-	struct station_config config_st_interface;
+
+	do_notification_next = 0;
+	do_notification_current = 0;
 
 	// To avoid division by zero.
 	if(config_current->registered_value == 0) {
@@ -368,13 +535,9 @@ do_read_adc(void) {
 		return;
 	}
 
-	#if (ENABLE_DEBUG == 1)
-		os_printf("\n[+] DBG: do_read_adc()\n");
-		os_printf("\n[+] DBG: Samplig ADC\n");
-	#endif
-
 	average = do_get_sensor_reading(ADC_SAMPLE_SIZE);
-	percent_change = (config_current->registered_value * config_current->the_plant_threshold_percent) / 100;
+	percent_change = \
+		(config_current->registered_value * config_current->the_plant_threshold_percent) / 100;
 
 	#if (ENABLE_DEBUG == 1)
 		os_printf("\n[+] DBG: ADC sample size = %d\n", ADC_SAMPLE_SIZE);
@@ -385,12 +548,24 @@ do_read_adc(void) {
 
 	if(config_current->the_plant_threshold_lt_gt == CONFIG_THRESHLOD_LT) {
 		if(average <= (config_current->registered_value - percent_change)) {
-			trigger_notification = true;
+			#if (ENABLE_DEBUG == 1)
+				os_printf("\n[+] DBG: ADC reading triggered thirst notification\n");
+				os_printf("\n[+] DBG: WiFi station connecting\n");
+			#endif
+
+			do_notification_current = DO_NOTIFICATION_THIRST;
+			do_notification_next = 0;
 		}
 	}
 	else if(config_current->the_plant_threshold_lt_gt == CONFIG_THRESHLOD_GT) {
 		if(average >= (config_current->registered_value + percent_change)) {
-			trigger_notification = true;
+			#if (ENABLE_DEBUG == 1)
+				os_printf("\n[+] DBG: ADC reading triggered thirst notification\n");
+				os_printf("\n[+] DBG: WiFi station connecting\n");
+			#endif
+
+			do_notification_current = DO_NOTIFICATION_THIRST;
+			do_notification_next = 0;
 		}
 	}
 	else {
@@ -403,54 +578,31 @@ do_read_adc(void) {
 		return;
 	}
 
-	if(trigger_notification) {
-		// Generate a notification.
+	#if (ENABLE_DEBUG == 1)
+		os_printf("\n[+] DBG: Sampling ADC for battery voltage\n");
+	#endif
+
+	if(is_battery_low(ADC_SAMPLE_SIZE)) {
 		#if (ENABLE_DEBUG == 1)
-			os_printf("\n[+] DBG: ADC reading triggered notification\n");
+			os_printf("\n[+] DBG: ADC reading triggered low battery notification\n");
 			os_printf("\n[+] DBG: WiFi station connecting\n");
 		#endif
 
-		// Clear out WiFi station interface configuration storage.
-		os_bzero(&config_st_interface, sizeof(config_st_interface));
-
-		// Enable station mode.
-		wifi_set_opmode(STATION_MODE);
-
-		// WiFi station settings.
-		config_st_interface.bssid_set = 0;
-		os_memcpy(&config_st_interface.ssid, config_current->the_plant_wifi_ap,
-			os_strlen(config_current->the_plant_wifi_ap));
-		os_memcpy(&config_st_interface.password, config_current->the_plant_wifi_ap_password,
-			os_strlen(config_current->the_plant_wifi_ap_password));
-
-		// Apply WiFi settings.
-		wifi_station_set_config_current(&config_st_interface);
-
-		// Set callback for WiFi events.
-		wifi_set_event_handler_cb(cb_wifi_event);
-
-		// Enable station mode reconnect.
-		wifi_station_set_reconnect_policy(true);
-
-		// Connect WiFi in station mode.
-		if(!wifi_station_connect()) {
-			#if (ENABLE_DEBUG == 1)
-				os_printf("\n[+] DBG: WiFi station mode connect failed\n");
-			#endif
-
-			do_state_error();
-
-			return;
+		if (do_notification_current != 0) {
+			do_notification_next = DO_NOTIFICATION_LOW_BATTERY;
+		}
+		else {
+			do_notification_current = DO_NOTIFICATION_LOW_BATTERY;
+			do_notification_next = 0;
 		}
 	}
-	else {
+
+	if(do_notification_next == 0 && do_notification_current == 0) {
 		// Don't generate notification.
 		#if (ENABLE_DEBUG == 1)
 			os_printf("\n[+] DBG: ADC reading didn't trigger notification\n");
 			os_printf("\n[+] DBG: Going to deep sleep mode\n");
 		#endif
-
-		//system_deep_sleep(DEEP_SLEEP_1_SEC * 8);
 
 		// Keep radio turned off after next wakeup.
 		#if (ENABLE_DEBUG == 1)
@@ -462,7 +614,13 @@ do_read_adc(void) {
 		// Make sure the sensor is powered off.
 		do_toggle_sesnor(false);
 
+		// Make sure VCC probe GPIO is on logic low.
+		do_toggle_vcc_probe(false);
+
 		system_deep_sleep(DEEP_SLEEP_HALF_HOUR);
+	}
+	else {
+		do_notification();
 	}
 }
 
@@ -554,8 +712,6 @@ void ICACHE_FLASH_ATTR
 do_read_counter_value_from_rtc_mem(void) {
 	uint32_t data_rtc, time_duration = 0;
 
-	//time_duration = config_current->the_plant_check_frequency;
-
 	// RTC memory operations.
 	if(system_rtc_mem_read(MEM_ADDR_RTC, &data_rtc, 4)) {
 		#if (ENABLE_DEBUG == 1)
@@ -564,7 +720,6 @@ do_read_counter_value_from_rtc_mem(void) {
 
 		data_rtc++;
 
-		//if(data_rtc < time_duration) {
 		// Half hour deep sleep duration 48 times = 1 day.
 		if(data_rtc < HALF_HOURS_IN_A_DAY) {
 			if(system_rtc_mem_write(MEM_ADDR_RTC, &data_rtc, 4)) {
@@ -572,7 +727,6 @@ do_read_counter_value_from_rtc_mem(void) {
 					os_printf("\n[+] DBG: RTC count up and write = %d\n", data_rtc);
 				#endif
 
-				//system_deep_sleep(DEEP_SLEEP_1_SEC * 8);
 				if(data_rtc == HALF_HOURS_IN_A_DAY - 1) {
 					// Do RF calibration after next wakeup.
 					#if (ENABLE_DEBUG == 1)
@@ -592,6 +746,9 @@ do_read_counter_value_from_rtc_mem(void) {
 
 				// Make sure the sensor is powered off.
 				do_toggle_sesnor(false);
+
+				// Make sure VCC probe GPIO is on logic low.
+				do_toggle_vcc_probe(false);
 
 				system_deep_sleep(DEEP_SLEEP_HALF_HOUR);
 			}
@@ -648,6 +805,9 @@ cb_system_init_done(void) {
 
 	// Make sure the sensor is powered off.
 	do_toggle_sesnor(false);
+
+	// Make sure VCC probe GPIO is on logic low.
+	do_toggle_vcc_probe(false);
 
 	// Must not be deallocated.
 	buffer_post_form = (char *)os_malloc(8192); // Used by web interface module.

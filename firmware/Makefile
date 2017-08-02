@@ -23,7 +23,6 @@ ESPPORT ?= /dev/ttyUSB0
 
 # Project name.
 TARGET = Thirst
-TARGET_VER = 1.0.0
 
 # Libraries used. Mostly from the SDK.
 LIBS = c gcc hal pp phy net80211 lwip wpa main esphttpd webpages-espfs

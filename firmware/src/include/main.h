@@ -19,6 +19,9 @@
 #define GPIO_O_BIT_VCC_SENSOR BIT15
 #define GPIO_O_FUNC_VCC_SENSOR FUNC_GPIO15
 #define GPIO_O_VCC_SENSOR PERIPHS_IO_MUX_MTDO_U
+#define GPIO_O_BIT_VCC_PROBE BIT5
+#define GPIO_O_FUNC_VCC_PROBE FUNC_GPIO5
+#define GPIO_O_VCC_PROBE PERIPHS_IO_MUX_GPIO5_U
 #define NOTIFIER_PORT 4200
 #define NOTIFIER_SIZE_SEND_BUFFER 4096
 #define NOTIFIER_HOST "vultr-debian9.duckdns.org"
@@ -38,6 +41,9 @@ Cache-Control: no-cache\r\n\
 \"message\": \"%s\"\
 }"
 
+#define FMT_LOW_BATTERY_SUBJECT "%s - Low Battery"
+#define FMT_LOW_BATTERY_MESSAGE "%s is low on battery. Please recharge."
+
 #define CONFIG_SECTOR_FLASH 0x3FA // 5th sector from the last sector of 4MB flash.
 #define CONFIG_SSID_LEN 32
 #define CONFIG_THRESHLOD_LT 1
@@ -53,6 +59,11 @@ Cache-Control: no-cache\r\n\
 #define DEEP_SLEEP_OPTION_SAME_AS_PWRUP 1
 #define DEEP_SLEEP_OPTION_NO_RF_CAL 2
 #define DEEP_SLEEP_OPTION_NO_RADIO 4
+
+#define LOW_BATTERY_THRESHOLD 350
+
+#define DO_NOTIFICATION_THIRST 1
+#define DO_NOTIFICATION_LOW_BATTERY 2
 
 typedef struct {
   uint8_t config_hash_pearson;
@@ -110,6 +121,15 @@ ip_addr_t ip_dns_resolved;
 bool state_error_led_state;
 os_timer_t timer_generic_software;
 extern const unsigned long webpages_espfs_start;
+
+void ICACHE_FLASH_ATTR
+do_notification(void);
+
+void ICACHE_FLASH_ATTR
+do_toggle_vcc_probe(bool toggle);
+
+bool ICACHE_FLASH_ATTR
+is_battery_low(uint32_t adc_sample_size);
 
 void
 cb_timer_disconnect_sock(void);
