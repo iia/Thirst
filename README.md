@@ -36,11 +36,11 @@ Button Functions
 
 The following table describes the functionalities of the buttons.
 
-| Reset | Function      | State              |
-| ----- | ------------- | ------------------ |
-| Click | -             | Reset              |
-| Click | Pressed       | Flashing Mode      |
-| Click | Delayed Press | Configuration Mode |
+| Reset     | Function      | State              |
+| --------- | ------------- | ------------------ |
+| Click     | -             | Reset              |
+| Click     | Pressed       | Flashing Mode      |
+| Click x 2 | Delayed Press | Configuration Mode |
 
 To enter configuration mode reset the device by clicking the reset button and
 just after resetting press and hold the function button until the blue LED turns
