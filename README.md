@@ -91,6 +91,12 @@ The compiled firmware can be flashed using,
 
 Note that for this the Python package **esptool** must be installed on the system.
 
+Notifier Service
+----------------
+
+For sending the email notifications this project uses a microservice.
+For details check [here](https://github.com/iia/notifier).
+
 Configuring the System
 ----------------------
 
