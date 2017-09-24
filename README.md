@@ -1,3 +1,5 @@
+![Thirst Banner](github_images/thirst.png)
+
 Thirst
 ======
 
