@@ -13,7 +13,7 @@ SDK_INCDIR = include driver_lib/include
 XTENSA_TOOLS_ROOT ?= esp-open-sdk/xtensa-lx106-elf/bin
 
 # SDK version to use.
-SDK_VER = 2.0.0
+SDK_VER = 2.1.0
 
 LIBESPHTTPD_BASE = libesphttpd
 

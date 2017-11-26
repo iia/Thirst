@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <mem.h>
 #include "main.h"
 #include "web_interface.h"

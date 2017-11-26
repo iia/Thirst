@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <mem.h>
 #include "main.h"
 #include "espfs.h"
@@ -671,7 +672,7 @@ do_state_error(void) {
 	wifi_set_opmode(NULL_MODE);
 
 	os_timer_disarm(&timer_generic_software);
-	os_timer_setfn(&timer_generic_software, do_state_error_toggle_led, NULL);
+	os_timer_setfn(&timer_generic_software, (os_timer_func_t *)do_state_error_toggle_led, NULL);
 	os_timer_arm(&timer_generic_software, 1000, true);
 }
 
@@ -834,7 +835,13 @@ cb_system_init_done(void) {
 
 	// Wait for 2 seconds.
 	for(i = 0; i < 2; i++) {
-		os_delay_us(1000000);
+		/*
+		 * In SDK 2.0.0 and lower the argument of os_delay_us() was of
+		 * type uint32_t. From SDK 2.1.0 it is uint16_t. So to achieve a
+		 * delay of 2 seconds (1000000us) here, we iterate the delay with
+		 * the highest possible value for uint16_t type.
+		 */
+		os_delay_us(65535);
 	}
 
 	/*
