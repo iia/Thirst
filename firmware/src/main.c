@@ -834,7 +834,7 @@ cb_system_init_done(void) {
 	PIN_PULLUP_EN(GPIO_I_CONFIG_MODE);
 
 	// Wait for 2 seconds.
-	for(i = 0; i < 2; i++) {
+	for(i = 0; i < 15; i++) {
 		/*
 		 * In SDK 2.0.0 and lower the argument of os_delay_us() was of
 		 * type uint32_t. From SDK 2.1.0 it is uint16_t. So to achieve a
