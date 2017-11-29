@@ -84,7 +84,6 @@ cgi_get_settings(HttpdConnData *connection_data) {
 		config_current->the_plant_threshold_percent,
 		config_current->the_plant_threshold_lt_gt,
 		do_get_sensor_reading(ADC_SAMPLE_SIZE),
-		//config_current->the_plant_check_frequency,
 		config_current->notification_email,
 		config_current->notification_email_subject,
 		config_current->notification_email_message);
@@ -153,9 +152,7 @@ cgi_save_settings(HttpdConnData *connection_data) {
 	char the_plant_threshold_percent[8];
 	char the_plant_threshold_lt_gt[4];
 	char registered_value[8];
-	//char the_plant_check_frequency[8];
 	bool do_timer_reset = true;
-	//char the_plant_reset_current_timer_state[2];
 	char notification_email[CONFIG_NOTIFICATION_EMAIL_LEN+2];
 	char notification_email_subject[CONFIG_NOTIFICATION_SUBJECT_LEN+2];
 	char notification_email_message[CONFIG_NOTIFICATION_MESSAGE_LEN+2];
@@ -305,46 +302,6 @@ cgi_save_settings(HttpdConnData *connection_data) {
 		return HTTPD_CGI_DONE;
 	}
 
-	/*
-	if((httpdFindArg(data, "the_plant_check_frequency", the_plant_check_frequency, sizeof(the_plant_check_frequency))) > 0) {
-		config_current->the_plant_check_frequency = (uint32_t)strtoul(the_plant_check_frequency, NULL, 10);
-		config_current->the_plant_check_frequency *= 8;
-	}
-	else {
-		#if(ENABLE_DEBUG == 1)
-			os_printf("\n[+] DBG: Can't acquire field value \"the_plant_check_frequency\"\n");
-		#endif
-
-		do_cgi_save_settings_fail_response_cleanup(connection_data, data,
-			buffer_response);
-
-		return HTTPD_CGI_DONE;
-	}
-	*/
-
-	/*
-	if((httpdFindArg(data, "the_plant_reset_current_timer_state",
-	   the_plant_reset_current_timer_state, sizeof(the_plant_reset_current_timer_state))) > 0) {
-		uint32_t reset = (uint32_t)strtoul(the_plant_reset_current_timer_state, NULL, 10);
-
-		if (reset == 0) {
-			do_timer_reset = false;
-		}
-		else {
-			do_timer_reset = true;
-		}
-	}
-	else {
-		#if(ENABLE_DEBUG == 1)
-			os_printf("\n[+] DBG: Can't acquire field value \"the_plant_reset_current_timer_state\"\n");
-		#endif
-
-		do_cgi_save_settings_fail_response_cleanup(connection_data, data, buffer_response);
-
-		return HTTPD_CGI_DONE;
-	}
-	*/
-
 	if((httpdFindArg(data, "notification_email", notification_email, sizeof(notification_email))) > 0) {
 		os_memcpy(config_current->notification_email, notification_email, sizeof(notification_email));
 	}
@@ -385,26 +342,34 @@ cgi_save_settings(HttpdConnData *connection_data) {
 			os_printf("\n[+] DBG: Can't acquire field value \"notification_email_message\"\n");
 		#endif
 
-		do_cgi_save_settings_fail_response_cleanup(connection_data, data,
-			buffer_response);
+		do_cgi_save_settings_fail_response_cleanup(connection_data,
+		                                           data,
+		                                           buffer_response);
 
 		return HTTPD_CGI_DONE;
 	}
 
 	if(do_save_current_config_to_flash(do_timer_reset)) {
-		os_sprintf(buffer_response, fmt_response_json_request_save_settings,
-			REQUEST_JSON_SAVE_SETTINGS, JSON_STATUS_OK, "\0");
+		os_sprintf(buffer_response,
+		           fmt_response_json_request_save_settings,
+		           REQUEST_JSON_SAVE_SETTINGS,
+		           JSON_STATUS_OK,
+			   "\0");
 
 		/*
 		 * Schedule a system restart but ensure that before sleeping there is enough
 		 * time to send the response.
 		 */
-		os_timer_setfn(&timer_generic_software, (os_timer_func_t *)cb_timer_deep_sleep, NULL);
-		os_timer_arm(&timer_generic_software, 4000, false); // Restat after 4 seconds.
+		os_timer_setfn(&timer_generic_software,
+		               (os_timer_func_t *)cb_timer_deep_sleep,
+		               NULL);
+		// Restat after 4 seconds.
+		os_timer_arm(&timer_generic_software, 4000, false);
 	}
 	else {
-		os_sprintf(buffer_response, fmt_response_json_request_save_settings,
-			REQUEST_JSON_SAVE_SETTINGS, JSON_STATUS_FAILED, "\0");
+		os_sprintf(buffer_response,
+		           fmt_response_json_request_save_settings,
+		           REQUEST_JSON_SAVE_SETTINGS, JSON_STATUS_FAILED, "\0");
 	}
 
 	httpdSend(connection_data, buffer_response, -1);

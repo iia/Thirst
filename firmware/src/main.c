@@ -19,14 +19,15 @@ config_t config_default = {
 	.config_hash_pearson = 0,
 
 	// Plant configuration.
-	.the_plant_name = "\0", // Will be filled with default plant name.
+
+	// Will be filled with default plant name.
+	.the_plant_name = "\0",
 	.the_plant_configuration_password = "1234567890",
 	.the_plant_wifi_ap = "\0",
 	.the_plant_wifi_ap_password = "\0",
 	.the_plant_threshold_percent = 5,
 	.the_plant_threshold_lt_gt = CONFIG_THRESHLOD_LT,
 	.registered_value = 0,
-	//.the_plant_check_frequency = 21600, // 1 day in 4 second units.
 
 	// Notification configuration.
 	.notification_email = "\0",
@@ -222,7 +223,7 @@ cb_sock_disconnect(void *arg) {
 	// Make sure VCC probe GPIO is on logic low.
 	do_toggle_vcc_probe(false);
 
-	system_deep_sleep(DEEP_SLEEP_HALF_HOUR);
+	system_deep_sleep(DEEP_SLEEP_DURATION_US);
 }
 
 void ICACHE_FLASH_ATTR
@@ -425,9 +426,26 @@ cb_wifi_event(System_Event_t *evt) {
 		os_printf("\n[+] DBG: cb_wifi_event()\n");
 	#endif
 
-	if(evt->event == EVENT_STAMODE_GOT_IP) {
+	if(evt->event == EVENT_STAMODE_CONNECTED) {
 		#if (ENABLE_DEBUG == 1)
-			os_printf("\n[+] DBG: Got IP\n");
+			os_printf("\n[+] DBG: WiFi STATION connected\n");
+		#endif
+	}
+	else if(evt->event == EVENT_STAMODE_DISCONNECTED) {
+		#if (ENABLE_DEBUG == 1)
+			os_printf("\n[+] DBG: WiFi STATION disconnected\n");
+		#endif
+	}
+	else if(evt->event == EVENT_STAMODE_AUTHMODE_CHANGE) {
+		#if (ENABLE_DEBUG == 1)
+			os_printf("\n[+] DBG: WiFi STATION authentication mode changed = %d -> %d\n",
+			          evt->event_info.auth_change.old_mode,
+			          evt->event_info.auth_change.new_mode);
+		#endif
+	}
+	else if(evt->event == EVENT_STAMODE_GOT_IP) {
+		#if (ENABLE_DEBUG == 1)
+			os_printf("\n[+] DBG: WiFi STATION got IP\n");
 		#endif
 
 		e = espconn_gethostbyname(&sock,
@@ -440,41 +458,61 @@ cb_wifi_event(System_Event_t *evt) {
 				#if (ENABLE_DEBUG == 1)
 					os_printf("\n[+] DBG: DNS lookup started\n");
 				#endif
+
+				break;
 			}
 
 			case ESPCONN_ARG: {
 				#if (ENABLE_DEBUG == 1)
 					os_printf("\n[+] DBG: DNS lookup argument error\n");
 				#endif
+
+				do_state_error();
+
+				break;
 			}
 
 			case ESPCONN_INPROGRESS: {
 				#if (ENABLE_DEBUG == 1)
 					os_printf("\n[+] DBG: DNS lookup in progress\n");
 				#endif
+
+				break;
 			}
 		}
 	}
-	else if(evt->event == STATION_WRONG_PASSWORD) {
+	else if(evt->event == EVENT_STAMODE_DHCP_TIMEOUT) {
 		#if (ENABLE_DEBUG == 1)
-			os_printf("\n[+] DBG: WiFi station connect failed, wrong password\n");
+			os_printf("\n[+] DBG: WiFi STATION DHCP timeout\n");
 		#endif
 
 		do_state_error();
 	}
-	else if(evt->event == STATION_NO_AP_FOUND) {
-		#if (ENABLE_DEBUG == 1)
-			os_printf("\n[+] DBG: WiFi station connect failed, no AP found\n");
-		#endif
 
-		do_state_error();
+	else if(evt->event == EVENT_SOFTAPMODE_STACONNECTED) {
+		#if (ENABLE_DEBUG == 1)
+			os_printf("\n[+] DBG: WiFi SOFTAP station connected\n");
+		#endif
 	}
-	else if(evt->event == STATION_CONNECT_FAIL) {
+	else if(evt->event == EVENT_SOFTAPMODE_STADISCONNECTED) {
 		#if (ENABLE_DEBUG == 1)
-			os_printf("\n[+] DBG: WiFi station connect failed\n");
+			os_printf("\n[+] DBG: WiFi SOFTAP station disconnected\n");
 		#endif
-
-		do_state_error();
+	}
+	else if(evt->event == EVENT_SOFTAPMODE_PROBEREQRECVED) {
+		#if (ENABLE_DEBUG == 1)
+			os_printf("\n[+] DBG: WiFi SOFTAP probe request received\n");
+		#endif
+	}
+	else if(evt->event == EVENT_OPMODE_CHANGED) {
+		#if (ENABLE_DEBUG == 1)
+			os_printf("\n[+] DBG: WiFi operating mode changed\n");
+		#endif
+	}
+	else {
+		#if (ENABLE_DEBUG == 1)
+			os_printf("\n[+] DBG: WiFi unknown event\n");
+		#endif
 	}
 }
 
@@ -618,7 +656,7 @@ do_read_adc(void) {
 		// Make sure VCC probe GPIO is on logic low.
 		do_toggle_vcc_probe(false);
 
-		system_deep_sleep(DEEP_SLEEP_HALF_HOUR);
+		system_deep_sleep(DEEP_SLEEP_DURATION_US);
 	}
 	else {
 		do_notification();
@@ -711,7 +749,8 @@ do_led_blue_turn_off(void) {
 
 void ICACHE_FLASH_ATTR
 do_read_counter_value_from_rtc_mem(void) {
-	uint32_t data_rtc, time_duration = 0;
+	uint32_t data_rtc = 0;
+	uint32_t ime_duration = 0;
 
 	// RTC memory operations.
 	if(system_rtc_mem_read(MEM_ADDR_RTC, &data_rtc, 4)) {
@@ -722,13 +761,13 @@ do_read_counter_value_from_rtc_mem(void) {
 		data_rtc++;
 
 		// Half hour deep sleep duration 48 times = 1 day.
-		if(data_rtc < HALF_HOURS_IN_A_DAY) {
+		if(data_rtc < TWO_HOURS_IN_A_DAY) {
 			if(system_rtc_mem_write(MEM_ADDR_RTC, &data_rtc, 4)) {
 				#if (ENABLE_DEBUG == 1)
 					os_printf("\n[+] DBG: RTC count up and write = %d\n", data_rtc);
 				#endif
 
-				if(data_rtc == HALF_HOURS_IN_A_DAY - 1) {
+				if(data_rtc == TWO_HOURS_IN_A_DAY - 1) {
 					// Do RF calibration after next wakeup.
 					#if (ENABLE_DEBUG == 1)
 						os_printf("\n[+] DBG: Setting deep sleep option = DEEP_SLEEP_OPTION_SAME_AS_PWRUP\n");
@@ -751,7 +790,7 @@ do_read_counter_value_from_rtc_mem(void) {
 				// Make sure VCC probe GPIO is on logic low.
 				do_toggle_vcc_probe(false);
 
-				system_deep_sleep(DEEP_SLEEP_HALF_HOUR);
+				system_deep_sleep(DEEP_SLEEP_DURATION_US);
 			}
 			else {
 				#if (ENABLE_DEBUG == 1)
@@ -836,10 +875,10 @@ cb_system_init_done(void) {
 	// Wait for 2 seconds.
 	for(i = 0; i < 15; i++) {
 		/*
-		 * In SDK 2.0.0 and lower the argument of os_delay_us() was of
-		 * type uint32_t. From SDK 2.1.0 it is uint16_t. So to achieve a
-		 * delay of 2 seconds (1000000us) here, we iterate the delay with
-		 * the highest possible value for uint16_t type.
+		 * In firmware version 1 the argument of os_delay_us() was of
+		 * type uint32_t. From firmware version 2 it is uint16_t. So to
+		 * achieve a delay of 2 seconds (1000000us) here, we iterate the
+		 * delay with the highest possible value for uint16_t type.
 		 */
 		os_delay_us(65535);
 	}
@@ -879,7 +918,7 @@ cb_system_init_done(void) {
 
 		// Set the deflault plant name on default configuration.
 		do_get_default_plant_name(config_default.the_plant_name,
-			sizeof(config_default.the_plant_name));
+		                          sizeof(config_default.the_plant_name));
 
 		// Set default configuration hash.
 		config_default.config_hash_pearson = do_get_hash_pearson((uint8_t *)&config_default);
@@ -890,7 +929,7 @@ cb_system_init_done(void) {
 	}
 
 	if (gpio_i_config_mode_value == 0) {
-		// config_t mode.
+		// Configuration mode.
 		#if (ENABLE_DEBUG == 1)
 			os_printf("\n[+] DBG: In configuration mode\n");
 		#endif
@@ -915,11 +954,11 @@ cb_system_init_done(void) {
 		config_ap_interface.authmode = AUTH_WPA_WPA2_PSK;
 
 		os_memcpy(config_ap_interface.ssid,
-							config_current->the_plant_name,
-							os_strlen(config_current->the_plant_name));
+			  config_current->the_plant_name,
+			  os_strlen(config_current->the_plant_name));
 		os_memcpy(config_ap_interface.password,
-							config_current->the_plant_configuration_password,
-							os_strlen(config_current->the_plant_configuration_password));
+			  config_current->the_plant_configuration_password,
+			  os_strlen(config_current->the_plant_configuration_password));
 
 		wifi_softap_dhcps_start();
 

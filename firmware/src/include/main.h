@@ -5,10 +5,8 @@
 
 #define ENABLE_DEBUG 0
 #define MEM_ADDR_RTC 0x40
-#define ADC_SAMPLE_SIZE 4 // Sampling ADC takes time increasing this causes WDT to reset.
-//#define DEEP_SLEEP_1_SEC 1000000
-#define HALF_HOURS_IN_A_DAY 48
-#define DEEP_SLEEP_HALF_HOUR 1800000000
+// Sampling ADC takes time, increasing this causes WDT to reset.
+#define ADC_SAMPLE_SIZE 4
 #define UART_BIT_RATE UART_CLK_FREQ/BIT_RATE_115200
 #define GPIO_O_BIT_LED_BLUE BIT2
 #define GPIO_O_FUNC_LED_BLUE FUNC_GPIO2
@@ -44,7 +42,12 @@ Cache-Control: no-cache\r\n\
 #define FMT_LOW_BATTERY_SUBJECT "%s - Low Battery"
 #define FMT_LOW_BATTERY_MESSAGE "%s is low on battery. Please recharge."
 
-#define CONFIG_SECTOR_FLASH 0x3FA // 5th sector from the last sector of 4MB flash.
+#define TWO_HOURS_IN_A_DAY 12
+// Two hours in micro seconds.
+#define DEEP_SLEEP_DURATION_US 7200000000
+
+// The 5th sector from the last sector of 4MB flash.
+#define CONFIG_SECTOR_FLASH 0x3FA
 #define CONFIG_SSID_LEN 32
 #define CONFIG_THRESHLOD_LT 1
 #define CONFIG_THRESHLOD_GT 2
@@ -66,22 +69,22 @@ Cache-Control: no-cache\r\n\
 #define DO_NOTIFICATION_LOW_BATTERY 2
 
 typedef struct {
-  uint8_t config_hash_pearson;
+        uint8_t config_hash_pearson;
 
-	// Plant configuration.
-	char the_plant_name[CONFIG_SSID_LEN];
-	char the_plant_configuration_password[CONFIG_SSID_PASSWORD_LEN];
-	char the_plant_wifi_ap[CONFIG_SSID_LEN];
-  char the_plant_wifi_ap_password[CONFIG_SSID_PASSWORD_LEN];
-  uint8_t the_plant_threshold_percent;
-  uint8_t the_plant_threshold_lt_gt;
-  uint32_t registered_value;
-  uint32_t the_plant_check_frequency;
+        // Plant configuration.
+        char the_plant_name[CONFIG_SSID_LEN];
+        char the_plant_configuration_password[CONFIG_SSID_PASSWORD_LEN];
+        char the_plant_wifi_ap[CONFIG_SSID_LEN];
+        char the_plant_wifi_ap_password[CONFIG_SSID_PASSWORD_LEN];
+        uint8_t the_plant_threshold_percent;
+        uint8_t the_plant_threshold_lt_gt;
+        uint32_t registered_value;
+        uint32_t the_plant_check_frequency;
 
-	// Notification configuration.
-	char notification_email[CONFIG_NOTIFICATION_EMAIL_LEN];
-	char notification_email_subject[CONFIG_NOTIFICATION_SUBJECT_LEN];
-	char notification_email_message[CONFIG_NOTIFICATION_MESSAGE_LEN];
+        // Notification configuration.
+        char notification_email[CONFIG_NOTIFICATION_EMAIL_LEN];
+        char notification_email_subject[CONFIG_NOTIFICATION_SUBJECT_LEN];
+        char notification_email_message[CONFIG_NOTIFICATION_MESSAGE_LEN];
 } config_t;
 
 // Pearson hash.
@@ -159,7 +162,7 @@ void ICACHE_FLASH_ATTR
 do_get_default_plant_name(char *default_plant_name, uint8_t len);
 
 bool ICACHE_FLASH_ATTR
-do_save_current_config_to_flash(/*bool do_timer_reset*/);
+do_save_current_config_to_flash();
 
 uint32_t ICACHE_FLASH_ATTR
 do_get_sensor_reading(uint32_t adc_sample_size);
