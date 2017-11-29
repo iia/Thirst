@@ -94,7 +94,7 @@ $1/%.o: %.c
 	$(LIBESPHTTPD_INCDIR) $(CFLAGS) -c $$< -o $$@
 endef
 
-.PHONY: all checkdirs flash prepare get-libesphttpd tc-build \
+.PHONY: all checkdirs flash flash_clear prepare get-libesphttpd tc-build \
 	compile-libesphttpd clean
 
 all: checkdirs compile-libesphttpd $(TARGET_OUT) $(APP_CODE_BIN) $(SDK_CODE_BIN)
@@ -119,6 +119,9 @@ $(BUILD_DIR):
 
 $(FW_BASE):
 	$(Q) mkdir -p $@
+
+flash_clear:
+	$(ESPTOOL) --port $(ESPPORT) erase_flash
 
 flash: $(APP_CODE_BIN) $(SDK_CODE_BIN)
 	$(ESPTOOL) --port $(ESPPORT) --baud 2000000 write_flash --flash_mode qio \
