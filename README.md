@@ -38,15 +38,11 @@ Button Functions
 
 The following table describes the functionalities of the buttons.
 
-| Reset     | Function                                        | State              |
-| --------- | ----------------------------------------------- | ------------------ |
-| Click     | -                                               | Reset              |
-| Click     | Pressed                                         | Flashing Mode      |
-| Click x 2 | Delayed Press and hold until blue LED lights up | Configuration Mode |
-
-To enter configuration mode reset the device by clicking the reset button and
-just after resetting press and hold the function button until the blue LED turns
-on.
+| Reset     | Function                                            | State              |
+| --------- | --------------------------------------------------- | ------------------ |
+| Click     | -                                                   | Reset              |
+| Click     | Pressed                                             | Flashing Mode      |
+| Click x 2 | Delayed press and hold until the blue LED lights up | Configuration Mode |
 
 LED Indicators
 --------------
@@ -73,7 +69,8 @@ Debian or Debian based system with the following command,
 
     sudo apt install yui-compressor python-serial python-pip python-setuptools -y
 
-Before compiling the firmware the build environment must be prepared.
+Before compiling the firmware make sure you have a working compiler toolchain
+for ESP8266.
 
 First download the latest released Espressif Non-OS SDK for ESP8266
 from [here](https://github.com/espressif/ESP8266_NONOS_SDK/releases) and extract
@@ -87,9 +84,8 @@ On the root directory of the extracted SDK archive clone this repository and
 
 Patch and compile libesphttpd. From the root directory of the extracted SDK,
 
-    cd thirst/
-    patch -b -N -d ../libesphttpd/ -p1 < patch/libesphttpd-Makefile.patch
-    make XTENSA_TOOLS_ROOT=/home/ishraq/git/esp-open-sdk/xtensa-lx106-elf/bin/ \
+    patch -b -N -d ./libesphttpd/ -p1 < ./thirst/patch/libesphttpd-Makefile.patch
+    make XTENSA_TOOLS_ROOT=<TC_BIN_DIR> \
     TOOLPREFIX=xtensa-lx106-elf- \
     USE_OPENSDK=yes \
     SDK_BASE=../ \
@@ -101,6 +97,9 @@ Patch and compile libesphttpd. From the root directory of the extracted SDK,
     HTTPD_WEBSOCKETS=no \
     HTMLDIR=../thirst/user/html
 
+Replace **<TC_BIN_DIR>** with the **bin** directory of the installed compiler
+toolchain for ESP8266.
+
 Compile the firmware. From the root directory of the extracted SDK,
 
     make -C thirst/ clean
@@ -110,7 +109,7 @@ Before flashing the firmware make sure **esptool** is installed,
 
     sudo pip install esptool
 
-After esptool is installed make sure the device has it's serial port connected
+After esptool is installed make sure the device has its serial port connected
 and is in flashing mode. Then the device can be flashed. From the root directory
 of the extracted SDK,
 
@@ -126,7 +125,7 @@ of the extracted SDK,
     0x3FC000 bin/esp_init_data_default.bin \
     0x3FE000 bin/blank.bin
 
-Where <SERIAL_USB_PORT> is the serial port which connects to the device.
+Where **<SERIAL_USB_PORT>** is the serial port which connects to the device.
 
 Notifier Service
 ----------------
