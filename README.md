@@ -80,7 +80,7 @@ from [here](https://github.com/espressif/ESP8266_NONOS_SDK/releases) and extract
 the archive.
 
 On the root directory of the extracted SDK archive clone this repository and
-(the libesphttpd repository)[https://github.com/Spritetm/libesphttpd].
+[the libesphttpd repository](https://github.com/Spritetm/libesphttpd).
 
 Patch libesphttpd. From the root directory of the extracted SDK,
 
