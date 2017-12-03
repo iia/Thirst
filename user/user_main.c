@@ -6,6 +6,7 @@
 #include "httpdespfs.h"
 #include "driver/uart.h"
 #include "web_interface.h"
+#include "user_interface.h"
 
 bool state_error_led_state = true;
 uint32_t do_notification_next = 0;
@@ -34,6 +35,39 @@ config_t config_default = {
 	.notification_email_subject = "\0",
 	.notification_email_message = "\0"
 };
+
+uint32 ICACHE_FLASH_ATTR
+user_rf_cal_sector_set(void)
+{
+    enum flash_size_map size_map = system_get_flash_size_map();
+    uint32 rf_cal_sec = 0;
+
+    switch (size_map) {
+        case FLASH_SIZE_4M_MAP_256_256:
+            rf_cal_sec = 128 - 5;
+            break;
+
+        case FLASH_SIZE_8M_MAP_512_512:
+            rf_cal_sec = 256 - 5;
+            break;
+
+        case FLASH_SIZE_16M_MAP_512_512:
+        case FLASH_SIZE_16M_MAP_1024_1024:
+            rf_cal_sec = 512 - 5;
+            break;
+
+        case FLASH_SIZE_32M_MAP_512_512:
+        case FLASH_SIZE_32M_MAP_1024_1024:
+            rf_cal_sec = 1024 - 5;
+            break;
+
+        default:
+            rf_cal_sec = 0;
+            break;
+    }
+
+    return rf_cal_sec;
+}
 
 void ICACHE_FLASH_ATTR
 do_notification(void) {
@@ -835,6 +869,64 @@ do_read_counter_value_from_rtc_mem(void) {
 }
 
 void ICACHE_FLASH_ATTR
+do_config_mode(void) {
+	struct ip_info ip;
+	struct softap_config config_ap_interface;
+
+	// Configuration mode.
+	#if (ENABLE_DEBUG == 1)
+		os_printf("\n[+] DBG: In configuration mode\n");
+	#endif
+
+	// Clear out configuration storage.
+	os_bzero(&ip, sizeof(ip));
+	os_bzero(&config_ap_interface, sizeof(config_ap_interface));
+
+	// Enable AP mode.
+	wifi_set_opmode(SOFTAP_MODE);
+	wifi_softap_dhcps_stop();
+
+	// Set AP mode configuration parameters.
+	IP4_ADDR(&ip.ip, 192, 168, 7, 1);
+	IP4_ADDR(&ip.gw, 192, 168, 7, 1);
+	IP4_ADDR(&ip.netmask, 255, 255, 255, 0);
+	wifi_set_ip_info(SOFTAP_IF, &ip);
+
+	config_ap_interface.channel = 7;
+	config_ap_interface.max_connection = 4;
+	config_ap_interface.beacon_interval = 50;
+	config_ap_interface.authmode = AUTH_WPA_WPA2_PSK;
+
+	os_memcpy(config_ap_interface.ssid,
+		  config_current->the_plant_name,
+		  os_strlen(config_current->the_plant_name));
+	os_memcpy(config_ap_interface.password,
+		  config_current->the_plant_configuration_password,
+		  os_strlen(config_current->the_plant_configuration_password));
+
+	wifi_softap_dhcps_start();
+
+	// Apply AP configuration.
+	wifi_softap_set_config_current(&config_ap_interface);
+
+	// Initialise ESPHTTPD web pages.
+	if(espFsInit((void*)(&webpages_espfs_start)) != ESPFS_INIT_RESULT_OK) {
+		#if (ENABLE_DEBUG == 1)
+			os_printf("\n[+] DBG: ESPFS initialisation for HTTPD failed\n");
+		#endif
+
+		do_state_error();
+
+		return;
+	}
+
+	// Start ESPHTTPD.
+	httpdInit(httpd_urls, 80);
+
+	do_state_config();
+}
+
+void ICACHE_FLASH_ATTR
 cb_system_init_done(void) {
 	uint32_t i = 0;
 	struct ip_info ip;
@@ -929,61 +1021,11 @@ cb_system_init_done(void) {
 	}
 
 	if (gpio_i_config_mode_value == 0) {
-		// Configuration mode.
-		#if (ENABLE_DEBUG == 1)
-			os_printf("\n[+] DBG: In configuration mode\n");
-		#endif
-
-		// Clear out configuration storage.
-		os_bzero(&ip, sizeof(ip));
-		os_bzero(&config_ap_interface, sizeof(config_ap_interface));
-
-		// Enable AP mode.
-		wifi_set_opmode(SOFTAP_MODE);
-		wifi_softap_dhcps_stop();
-
-		// Set AP mode configuration parameters.
-		IP4_ADDR(&ip.ip, 192, 168, 7, 1);
-		IP4_ADDR(&ip.gw, 192, 168, 7, 1);
-		IP4_ADDR(&ip.netmask, 255, 255, 255, 0);
-		wifi_set_ip_info(SOFTAP_IF, &ip);
-
-		config_ap_interface.channel = 7;
-		config_ap_interface.max_connection = 4;
-		config_ap_interface.beacon_interval = 50;
-		config_ap_interface.authmode = AUTH_WPA_WPA2_PSK;
-
-		os_memcpy(config_ap_interface.ssid,
-			  config_current->the_plant_name,
-			  os_strlen(config_current->the_plant_name));
-		os_memcpy(config_ap_interface.password,
-			  config_current->the_plant_configuration_password,
-			  os_strlen(config_current->the_plant_configuration_password));
-
-		wifi_softap_dhcps_start();
-
-		// Apply AP configuration.
-		wifi_softap_set_config_current(&config_ap_interface);
-
-		// Initialise ESPHTTPD web pages.
-		if(espFsInit((void*)(&webpages_espfs_start)) != ESPFS_INIT_RESULT_OK) {
-			#if (ENABLE_DEBUG == 1)
-				os_printf("\n[+] DBG: ESPFS initialisation for HTTPD failed\n");
-			#endif
-
-			do_state_error();
-
-			return;
-		}
-
-		// Start ESPHTTPD.
-		httpdInit(httpd_urls, 80);
-
-		do_state_config();
+		do_config_mode();
 	}
 	else {
 		if(config_none) {
-			do_state_error();
+			do_config_mode();
 
 			return;
 		}

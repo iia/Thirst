@@ -156,6 +156,9 @@ void ICACHE_FLASH_ATTR
 cb_wifi_event(System_Event_t *evt);
 
 void ICACHE_FLASH_ATTR
+do_config_mode(void);
+
+void ICACHE_FLASH_ATTR
 cb_system_init_done(void);
 
 void ICACHE_FLASH_ATTR

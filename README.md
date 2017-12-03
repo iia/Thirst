@@ -1,4 +1,4 @@
-![Thirst Banner](github_images/thirst.png)
+![Thirst Banner](.readme-resources/thirst.png)
 
 Thirst
 ======
@@ -21,7 +21,7 @@ The hardware is based on,
 The moisture sensor must be connected on PORT1 of the Wio Node.
 
 <p align="center">
-    <img align="center" src="https://github.com/iia/Thirst/blob/master/github_images/hardware.jpg" width="350" height="450" />
+    <img align="center" src="https://github.com/iia/Thirst/blob/master/.readme-resources/hardware.jpg" width="350" height="450" />
 </p>
 
 LEDs and Buttons
@@ -112,5 +112,5 @@ After connecting to this access point the configuration interface will be availa
 IP address: **192.168.7.1** which can be used with a web browser.
 
 <p align="center">
-    <img align="center" src="https://github.com/iia/Thirst/blob/master/github_images/configuration_interface.png" width="" height="" />
+    <img align="center" src="https://github.com/iia/Thirst/blob/master/.readme-resources/configuration_interface.png" width="" height="" />
 </p>
