@@ -85,7 +85,7 @@ On the root directory of the extracted SDK archive clone this repository and
 Patch and compile libesphttpd. From the root directory of the extracted SDK,
 
     patch -b -N -d ./libesphttpd/ -p1 < ./thirst/patch/libesphttpd-Makefile.patch
-    make XTENSA_TOOLS_ROOT=<TC_BIN_DIR> \
+    make -C libesphttpd/ XTENSA_TOOLS_ROOT=<TC_BIN_DIR> \
     TOOLPREFIX=xtensa-lx106-elf- \
     USE_OPENSDK=yes \
     SDK_BASE=../ \
