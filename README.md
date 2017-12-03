@@ -107,7 +107,7 @@ Compile the firmware. From the root directory of the extracted SDK,
 
 Before flashing the firmware make sure **esptool** is installed,
 
-    sudo pip install esptool
+    pip install esptool
 
 After esptool is installed make sure the device has its serial port connected
 and is in flashing mode. Then the device can be flashed. From the root directory
