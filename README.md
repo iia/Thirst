@@ -90,7 +90,7 @@ Patch and compile libesphttpd. From the root directory of the extracted SDK,
     USE_OPENSDK=yes \
     SDK_BASE=../ \
     HTTPD_MAX_CONNECTIONS=8 \
-    GZIP_COMPRESSION=yes \
+    GZIP_COMPRESSION=no \
     COMPRESS_W_YUI=yes \
     YUI-COMPRESSOR=/usr/bin/yui-compressor \
     USE_HEATSHRINK=yes \
