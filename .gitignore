@@ -1,4 +1,5 @@
 # Directories
+.output/
 bin/
 build/
 libesphttpd/
