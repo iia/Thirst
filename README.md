@@ -125,7 +125,8 @@ of the extracted SDK,
     0x3FC000 bin/esp_init_data_default.bin \
     0x3FE000 bin/blank.bin
 
-Where **<SERIAL_USB_PORT>** is the serial port which connects to the device.
+Where **<SERIAL_USB_PORT>** is the serial port which connects to the device. Do
+a reset using the reset button after flashing.
 
 Configuring the System
 ----------------------
