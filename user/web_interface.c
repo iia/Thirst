@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <mem.h>
-#include "main.h"
+#include "user_main.h"
 #include "web_interface.h"
 
 uint32_t index_buffer_post_form = 0;

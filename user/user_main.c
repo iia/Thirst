@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <mem.h>
-#include "main.h"
+#include "user_main.h"
 #include "espfs.h"
 #include "platform.h"
 #include "httpdespfs.h"
@@ -967,8 +967,8 @@ cb_system_init_done(void) {
 	// Wait for 2 seconds.
 	for(i = 0; i < 15; i++) {
 		/*
-		 * In firmware version 1 the argument of os_delay_us() was of
-		 * type uint32_t. From firmware version 2 it is uint16_t. So to
+		 * In firmware version v1 the argument of os_delay_us() was of
+		 * type uint32_t. From firmware version v2 it is uint16_t. So to
 		 * achieve a delay of 2 seconds (1000000us) here, we iterate the
 		 * delay with the highest possible value for uint16_t type.
 		 */
