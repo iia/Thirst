@@ -68,30 +68,51 @@ LED Indicators
 
 Compiling and Flashing the Firmware
 -----------------------------------
-Firmware compilation has package dependencies which can be satisfied on a Debian
-based system with the following command,
+Firmware compilation has package dependencies which can be satisfied on a
+Debian or Debian based system with the following command,
 
-    sudo apt install autoconf automake gperf bison flex texinfo help2man libtool-bin libncurses5-dev libpython2.7-dev yui-compressor python-serial -y
+    sudo apt install yui-compressor python-serial python-pip python-setuptools -y
 
-Before compiling the firmware the build environment must be prepared,
+Before compiling the firmware the build environment must be prepared.
 
-    make -C firmware/ prepare
+First download the latest released Espressif Non-OS SDK for ESP8266
+from [here](https://github.com/espressif/ESP8266_NONOS_SDK/releases) and extract
+the archive.
 
-Then patches must be applied,
+On the root directory of the extracted SDK archive clone this repository and
+(the libesphttpd repository)[https://github.com/Spritetm/libesphttpd].
 
-    cd firmware/
-    patch -b -N -d libesphttpd/ -p0 < patch/libesphttpd-Makefile.patch
+Patch libesphttpd. From the root directory of the extracted SDK,
 
-Then to compile the firmware,
+    cd thirst/
+    patch -b -N -d ../libesphttpd/ -p1 < patch/libesphttpd-Makefile.patch
 
-    make -C firmware/ clean
-    make -C firmware/ all
+Compile the firmware. From the root directory of the extracted SDK,
 
-The compiled firmware can be flashed using,
+    make -C thirst/ clean
+    make -C thirst/ COMPILE=gcc BOOT=new APP=1 SPI_SPEED=80 SPI_MODE=QIO SPI_SIZE_MAP=6
 
-    make -C firmware/ ESPPORT=/dev/<SERIAL_USB_PORT> flash
+Before flashing the firmware make sure **esptool** is installed,
 
-Note that for this the Python package **esptool** must be installed on the system.
+    sudo pip install esptool
+
+After esptool is installed make sure the device has it's serial port connected
+and is in flashing mode. Then the device can be flashed. From the root directory
+of the extracted SDK,
+
+    esptool.py \
+    --port <SERIAL_USB_PORT> \
+    --baud 2000000 \
+    write_flash \
+    --flash_mode qio \
+    --flash_size 4MB \
+    --flash_freq 80m \
+    0x000000 bin/boot_v1.7.bin \
+    0x001000 bin/upgrade/user1.4096.new.6.bin \
+    0x3FC000 bin/esp_init_data_default.bin \
+    0x3FE000 bin/blank.bin
+
+Where <SERIAL_USB_PORT> is the serial port which connects to the device.
 
 Notifier Service
 ----------------
@@ -103,13 +124,13 @@ Configuring the System
 ----------------------
 
 To switch the device into configuration mode follow the instructions described
-in the [Button Functions](https://github.com/iia/thirst/blob/master/README.md#button-functions) section.
-In configuration mode the system presents a WiFi access point. Initially the name of the access point
-would be of form, **Thirst-XXX** where each **X** is a hexadecimal number and the password will be
-**1234567890**.
+in the [Button Functions](https://github.com/iia/thirst/blob/master/README.md#button-functions)
+section. In configuration mode the system presents a WiFi access point. Initially
+the name of the access point would be of form, **Thirst-XXX** where each **X** is
+a 1-byte hexadecimal number and the password will be **1234567890**.
 
-After connecting to this access point the configuration interface will be available on
-IP address: **192.168.7.1** which can be used with a web browser.
+After connecting to this access point the configuration interface will be
+available on IP address: **192.168.7.1** which can be used with a web browser.
 
 <p align="center">
     <img align="center" src="https://github.com/iia/Thirst/blob/master/.readme-resources/configuration_interface.png" width="" height="" />
