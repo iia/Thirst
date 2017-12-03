@@ -127,12 +127,6 @@ of the extracted SDK,
 
 Where **<SERIAL_USB_PORT>** is the serial port which connects to the device.
 
-Notifier Service
-----------------
-
-For sending the email notifications this project uses a microservice.
-For details check [here](https://github.com/iia/notifier).
-
 Configuring the System
 ----------------------
 
@@ -148,3 +142,9 @@ available on IP address: **192.168.7.1** which can be used with a web browser.
 <p align="center">
     <img align="center" src="https://github.com/iia/Thirst/blob/master/.readme-resources/configuration_interface.png" width="" height="" />
 </p>
+
+Notifier Service
+----------------
+
+For sending the email notifications this project uses a microservice.
+For details check [here](https://github.com/iia/notifier).
