@@ -82,10 +82,24 @@ the archive.
 On the root directory of the extracted SDK archive clone this repository and
 [the libesphttpd repository](https://github.com/Spritetm/libesphttpd).
 
-Patch libesphttpd. From the root directory of the extracted SDK,
+    git clone https://github.com/iia/thirst.git
+    git clone https://github.com/Spritetm/libesphttpd.git
+
+Patch and compile libesphttpd. From the root directory of the extracted SDK,
 
     cd thirst/
     patch -b -N -d ../libesphttpd/ -p1 < patch/libesphttpd-Makefile.patch
+    make XTENSA_TOOLS_ROOT=/home/ishraq/git/esp-open-sdk/xtensa-lx106-elf/bin/ \
+    TOOLPREFIX=xtensa-lx106-elf- \
+    USE_OPENSDK=yes \
+    SDK_BASE=../ \
+    HTTPD_MAX_CONNECTIONS=8 \
+    GZIP_COMPRESSION=yes \
+    COMPRESS_W_YUI=yes \
+    YUI-COMPRESSOR=/usr/bin/yui-compressor \
+    USE_HEATSHRINK=yes \
+    HTTPD_WEBSOCKETS=no \
+    HTMLDIR=../thirst/user/html
 
 Compile the firmware. From the root directory of the extracted SDK,
 
