@@ -98,7 +98,7 @@ Patch and compile libesphttpd. From the root directory of the extracted SDK,
     HTMLDIR=../thirst/user/html
 
 Replace **<TC_BIN_DIR>** with the **bin** directory of the installed compiler
-toolchain for ESP8266.
+toolchain for ESP8266. Make sure the provided path ends with a **/**.
 
 Compile the firmware. From the root directory of the extracted SDK,
 
