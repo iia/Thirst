@@ -49,8 +49,8 @@ cgi_get_settings(HttpdConnData *connection_data) {
 	if((httpdFindArg(connection_data->post->buff, "request", request, sizeof(request))) > 0) {
 		// Check request.
 		if(strtoul(request, NULL, 10) != REQUEST_JSON_GET_SETTINGS) {
-			os_sprintf(buffer_response, fmt_response_json_request_get_settings,
-				REQUEST_JSON_GET_SETTINGS, JSON_STATUS_FAILED, "\0");
+			os_sprintf(buffer_response, fmt_response_json_request_data_json,
+				REQUEST_JSON_GET_SETTINGS, JSON_STATUS_FAILED, "{}");
 
 			httpdSend(connection_data, buffer_response, -1);
 
@@ -61,8 +61,8 @@ cgi_get_settings(HttpdConnData *connection_data) {
 		}
 	}
 	else {
-		os_sprintf(buffer_response, fmt_response_json_request_get_settings,
-			REQUEST_JSON_GET_SETTINGS, JSON_STATUS_FAILED, "\0");
+		os_sprintf(buffer_response, fmt_response_json_request_data_json,
+			REQUEST_JSON_GET_SETTINGS, JSON_STATUS_FAILED, "{}");
 
 		/*
 		 * FIXME: If send data size is large then it may require partial sends which
@@ -88,7 +88,7 @@ cgi_get_settings(HttpdConnData *connection_data) {
 		config_current->notification_email_subject,
 		config_current->notification_email_message);
 
-	os_sprintf(buffer_response, fmt_response_json_request_get_settings,
+	os_sprintf(buffer_response, fmt_response_json_request_data_json,
 		REQUEST_JSON_GET_SETTINGS, JSON_STATUS_OK, buffer_response_data);
 
 	httpdSend(connection_data, buffer_response, -1);
@@ -120,7 +120,7 @@ cgi_get_sensor_reading(HttpdConnData *connection_data) {
 	httpdHeader(connection_data, "Content-Type", "text/json");
 	httpdEndHeaders(connection_data);
 
-	os_sprintf(buffer_response, fmt_response_json_request_get_sensor_reading ,
+	os_sprintf(buffer_response, fmt_response_json_request_data_integer,
 		REQUEST_JSON_GET_SENSOR_READING, JSON_STATUS_OK, sensor_reading);
 
 	httpdSend(connection_data, buffer_response, -1);
@@ -130,16 +130,92 @@ cgi_get_sensor_reading(HttpdConnData *connection_data) {
 	return HTTPD_CGI_DONE;
 }
 
+int ICACHE_FLASH_ATTR
+cgi_start_wifi_scan(HttpdConnData *connection_data) {
+	char *buffer_response = (uint8_t *)os_malloc(64);
+	os_bzero(buffer_response, 64);
+
+	#if(ENABLE_DEBUG == 1)
+		os_printf("\n[+] DBG: cgi_start_wifi_scan()\n");
+	#endif
+
+	if(do_start_wifi_scan()) {
+		#if(ENABLE_DEBUG == 1)
+			os_printf("\n[+] DBG: WiFi scan start OK\n");
+		#endif
+
+		os_sprintf(buffer_response,
+			   fmt_response_json_request_data_json,
+			   REQUEST_JSON_START_WIFI_SCAN,
+			   JSON_STATUS_OK,
+			   "{}");
+	}
+	else {
+		#if(ENABLE_DEBUG == 1)
+			os_printf("\n[+] DBG: WiFi scan start failed\n");
+		#endif
+
+		os_sprintf(buffer_response,
+		           fmt_response_json_request_data_json,
+		           REQUEST_JSON_START_WIFI_SCAN,
+			   JSON_STATUS_FAILED,
+			   "{}");
+	}
+
+	// HTTPD header.
+	httpdStartResponse(connection_data, 200);
+	httpdHeader(connection_data, "Content-Type", "text/json");
+	httpdEndHeaders(connection_data);
+	httpdSend(connection_data, buffer_response, -1);
+	os_free(buffer_response);
+
+	return HTTPD_CGI_DONE;
+}
+
+int ICACHE_FLASH_ATTR
+cgi_get_wifi_scan_result(HttpdConnData *connection_data) {
+	char *buffer_response = NULL;
+	char *_buffer_response = NULL;
+
+	#if(ENABLE_DEBUG == 1)
+		os_printf("\n[+] DBG: cgi_get_wifi_scan_result()\n");
+	#endif
+
+	do_get_wifi_scan_result(&_buffer_response);
+
+	buffer_response = (char *)os_malloc(os_strlen(_buffer_response) + 40);
+
+	os_sprintf(buffer_response,
+	           fmt_response_json_request_data_json,
+		   REQUEST_JSON_GET_WIFI_SCAN_RESULT,
+		   JSON_STATUS_OK,
+		   _buffer_response);
+
+	// HTTPD header.
+	httpdStartResponse(connection_data, 200);
+	httpdHeader(connection_data, "Content-Type", "text/json");
+	httpdEndHeaders(connection_data);
+	httpdSend(connection_data, buffer_response, -1);
+	os_free(buffer_response);
+	os_free(_buffer_response);
+
+	return HTTPD_CGI_DONE;
+}
+
 void ICACHE_FLASH_ATTR
 do_cgi_save_settings_fail_response_cleanup(HttpdConnData *connection_data,
-	char *data, char *buffer_response) {
-		os_sprintf(buffer_response, fmt_response_json_request_save_settings,
-			REQUEST_JSON_SAVE_SETTINGS, JSON_STATUS_FAILED, "\0");
+                                           char *data,
+                                           char *buffer_response) {
+	os_sprintf(buffer_response,
+	           fmt_response_json_request_data_json,
+	           REQUEST_JSON_SAVE_SETTINGS,
+	           JSON_STATUS_FAILED,
+	           "{}");
 
-		httpdSend(connection_data, buffer_response, -1);
+	httpdSend(connection_data, buffer_response, -1);
 
-		os_free(data);
-		os_free(buffer_response);
+	os_free(data);
+	os_free(buffer_response);
 }
 
 int ICACHE_FLASH_ATTR
@@ -351,10 +427,10 @@ cgi_save_settings(HttpdConnData *connection_data) {
 
 	if(do_save_current_config_to_flash(do_timer_reset)) {
 		os_sprintf(buffer_response,
-		           fmt_response_json_request_save_settings,
+		           fmt_response_json_request_data_json,
 		           REQUEST_JSON_SAVE_SETTINGS,
 		           JSON_STATUS_OK,
-			   "\0");
+			   "{}");
 
 		/*
 		 * Schedule a system restart but ensure that before sleeping there is enough
@@ -368,8 +444,8 @@ cgi_save_settings(HttpdConnData *connection_data) {
 	}
 	else {
 		os_sprintf(buffer_response,
-		           fmt_response_json_request_save_settings,
-		           REQUEST_JSON_SAVE_SETTINGS, JSON_STATUS_FAILED, "\0");
+		           fmt_response_json_request_data_json,
+		           REQUEST_JSON_SAVE_SETTINGS, JSON_STATUS_FAILED, "{}");
 	}
 
 	httpdSend(connection_data, buffer_response, -1);

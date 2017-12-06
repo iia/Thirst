@@ -87,6 +87,24 @@ typedef struct {
         char notification_email_message[CONFIG_NOTIFICATION_MESSAGE_LEN];
 } config_t;
 
+struct ap_list_element_s {
+        SLIST_ENTRY(ap_list_element_s) next;
+        uint8 bssid[6];
+        uint8 ssid[32];
+        uint8 ssid_len;
+        uint8 channel;
+        sint8 rssi;
+        AUTH_MODE authmode;
+        uint8 is_hidden;
+};
+
+SLIST_HEAD(ap_list_head_s, ap_list_element_s);
+
+typedef struct ap_list_element_s ap_list_element_t;
+typedef struct ap_list_head_s ap_list_head_t;
+
+// Global variables.
+
 // Pearson hash.
 static const uint8_t permutation_pearson[PERMUTATION_PEARSON_SIZE] = {
 	1, 87, 49, 12, 176, 178, 102, 166, 121, 193, 6, 84, 249, 230, 44, 163,
@@ -121,10 +139,15 @@ config_t *config_current;
 char *buffer_post_form;
 
 ip_addr_t ip_dns_resolved;
+bool waiting_wifi_scan_cb;
 bool state_error_led_state;
+uint32_t do_notification_next;
+uint32_t do_notification_current;
 os_timer_t timer_generic_software;
+
 extern const unsigned long webpages_espfs_start;
 
+// Function prototypes.
 void ICACHE_FLASH_ATTR
 do_notification(void);
 
@@ -153,6 +176,9 @@ void ICACHE_FLASH_ATTR
 cb_dns_resolved(const char *hostname, ip_addr_t *ip_resolved, void *arg);
 
 void ICACHE_FLASH_ATTR
+cb_wifi_scan_done(void *bss_info_list, STATUS status);
+
+void ICACHE_FLASH_ATTR
 cb_wifi_event(System_Event_t *evt);
 
 void ICACHE_FLASH_ATTR
@@ -169,6 +195,15 @@ do_save_current_config_to_flash();
 
 uint32_t ICACHE_FLASH_ATTR
 do_get_sensor_reading(uint32_t adc_sample_size);
+
+void ICACHE_FLASH_ATTR
+do_clear_wifi_scan_result(ap_list_head_t *ap_list_head);
+
+bool ICACHE_FLASH_ATTR
+do_start_wifi_scan(void);
+
+void ICACHE_FLASH_ATTR
+do_get_wifi_scan_result(char **buffer_response_data);
 
 void ICACHE_FLASH_ATTR
 do_toggle_sesnor(bool toggle);

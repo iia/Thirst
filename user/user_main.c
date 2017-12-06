@@ -8,8 +8,12 @@
 #include "web_interface.h"
 #include "user_interface.h"
 
-bool state_error_led_state = true;
+
+// Initialize global variables.
+ap_list_head_t ap_list_head;
 uint32_t do_notification_next = 0;
+bool waiting_wifi_scan_cb = false;
+bool state_error_led_state = true;
 uint32_t do_notification_current = 0;
 
 /*
@@ -453,6 +457,48 @@ do_save_current_config_to_flash() {
 }
 
 void ICACHE_FLASH_ATTR
+cb_wifi_scan_done(void *bss_info_list, STATUS status) {
+	waiting_wifi_scan_cb = false;
+	ap_list_element_t *ap_list_element = NULL;
+	struct bss_info *bss_info_list_element = NULL;
+
+	#if (ENABLE_DEBUG == 1)
+		os_printf("\n[+] DBG: cb_wifi_scan_done()\n");
+	#endif
+
+
+	if(status != OK || bss_info_list == NULL) {
+		return;
+	}
+
+	do_clear_wifi_scan_result(&ap_list_head);
+
+	bss_info_list_element = (struct bss_info*)bss_info_list;
+
+	while(bss_info_list_element) {
+		ap_list_element = \
+			(ap_list_element_t *)malloc(sizeof(ap_list_element_t));
+
+		os_memcpy(ap_list_element->bssid,
+		          bss_info_list_element->bssid,
+			  sizeof(bss_info_list_element->bssid));
+		os_memcpy(ap_list_element->ssid,
+		          bss_info_list_element->ssid,
+			  bss_info_list_element->ssid_len);
+
+		ap_list_element->ssid_len = bss_info_list_element->ssid_len;
+		ap_list_element->channel = bss_info_list_element->channel;
+		ap_list_element->rssi = bss_info_list_element->rssi;
+		ap_list_element->authmode = bss_info_list_element->authmode;
+		ap_list_element->is_hidden = bss_info_list_element->is_hidden;
+
+		SLIST_INSERT_HEAD(&ap_list_head, ap_list_element, next);
+
+		bss_info_list_element = bss_info_list_element->next.stqe_next;
+	}
+}
+
+void ICACHE_FLASH_ATTR
 cb_wifi_event(System_Event_t *evt) {
 	err_t e;
 
@@ -578,7 +624,125 @@ do_get_sensor_reading(uint32_t adc_sample_size) {
 	return sum / adc_sample_size;
 }
 
-void ICACHE_FLASH_ATTR do_toggle_sesnor(bool toggle) {
+void ICACHE_FLASH_ATTR
+do_clear_wifi_scan_result(ap_list_head_t *ap_list_head) {
+	ap_list_element_t *ap_list_element = NULL;
+
+	#if (ENABLE_DEBUG == 1)
+	        os_printf("\n[+] DBG: do_clear_wifi_scan_result()\n");
+	#endif
+
+	while(!SLIST_EMPTY(ap_list_head)) {
+		ap_list_element = SLIST_FIRST(ap_list_head);
+		SLIST_REMOVE_HEAD(ap_list_head, next);
+		free(ap_list_element);
+	}
+
+}
+
+bool ICACHE_FLASH_ATTR
+do_start_wifi_scan(void) {
+	#if (ENABLE_DEBUG == 1)
+	        os_printf("\n[+] DBG: do_start_wifi_scan()\n");
+	#endif
+
+	if(waiting_wifi_scan_cb) {
+		return true;
+	}
+
+	if(!wifi_station_scan(NULL, cb_wifi_scan_done)) {
+		return false;
+	}
+
+	waiting_wifi_scan_cb = true;
+
+	return true;
+}
+
+void ICACHE_FLASH_ATTR
+do_get_wifi_scan_result(char **buffer_response_data) {
+	uint32_t ap_count = 0;
+	uint32_t ap_total = 0;
+	char *buffer_ap_element = NULL;
+	char *buffer_ap_element_ssid = NULL;
+	char *buffer_ap_element_bssid = NULL;
+	ap_list_element_t *ap_list_element = NULL;
+
+	#if (ENABLE_DEBUG == 1)
+	        os_printf("\n[+] DBG: do_get_wifi_scan_result()\n");
+	#endif
+
+	os_free(*buffer_response_data);
+	*buffer_response_data = NULL;
+
+	SLIST_FOREACH(ap_list_element, &ap_list_head, next) {
+		ap_count++;
+	}
+
+	ap_total = ap_count;
+	ap_count = 0;
+
+	if(ap_total < 1) {
+		*buffer_response_data = (char *)malloc(4);
+		os_bzero(*buffer_response_data, 4);
+		os_strcat(*buffer_response_data, "[]");
+
+		return;
+	}
+
+	*buffer_response_data = (char *)malloc((ap_total*100) + 2);
+	os_bzero(*buffer_response_data, (ap_total*100) + 2);
+	os_strcpy(*buffer_response_data, "[\0");
+
+	SLIST_FOREACH(ap_list_element, &ap_list_head, next) {
+		ap_count++;
+
+		buffer_ap_element = (char *)malloc(100);
+		buffer_ap_element_ssid = (char *)malloc(33);
+		buffer_ap_element_bssid = (char *)malloc(16);
+
+		os_bzero(buffer_ap_element, 100);
+		os_bzero(buffer_ap_element_ssid, 33);
+		os_bzero(buffer_ap_element_bssid, 16);
+
+		os_strncpy(buffer_ap_element_ssid,
+		           ap_list_element->ssid,
+		           ap_list_element->ssid_len);
+
+		os_sprintf(buffer_ap_element_bssid,
+		           "%02X%02X%02X%02X%02X%02X",
+		           ap_list_element->bssid[0],
+		           ap_list_element->bssid[1],
+		           ap_list_element->bssid[2],
+		           ap_list_element->bssid[3],
+		           ap_list_element->bssid[4],
+		           ap_list_element->bssid[5]);
+
+		os_sprintf(buffer_ap_element,
+		           fmt_get_wifi_scan_result_data_json,
+		           buffer_ap_element_bssid,
+		           buffer_ap_element_ssid,
+		           ap_list_element->channel,
+		           ap_list_element->rssi,
+		           ap_list_element->authmode,
+		           ap_list_element->is_hidden);
+
+		os_strcat(*buffer_response_data, buffer_ap_element);
+
+		if(ap_count < ap_total) {
+			os_strcat(*buffer_response_data, ",\0");
+		}
+
+		os_free(buffer_ap_element);
+		os_free(buffer_ap_element_ssid);
+		os_free(buffer_ap_element_bssid);
+	}
+
+	os_strcat(*buffer_response_data, "]\0");
+}
+
+void ICACHE_FLASH_ATTR
+do_toggle_sesnor(bool toggle) {
 	PIN_FUNC_SELECT(GPIO_O_VCC_SENSOR, GPIO_O_FUNC_VCC_SENSOR);
 
 	if(toggle) {
@@ -883,7 +1047,7 @@ do_config_mode(void) {
 	os_bzero(&config_ap_interface, sizeof(config_ap_interface));
 
 	// Enable AP mode.
-	wifi_set_opmode(SOFTAP_MODE);
+	wifi_set_opmode(STATIONAP_MODE);
 	wifi_softap_dhcps_stop();
 
 	// Set AP mode configuration parameters.
@@ -934,6 +1098,12 @@ cb_system_init_done(void) {
 	bool config_none = false;
 	uint32_t gpio_i_config_mode_value = 1;
 	struct softap_config config_ap_interface;
+	ap_list_element_t *ap_list_element = NULL;
+
+	#if (ENABLE_DEBUG == 1)
+		os_printf("\n[+] DBG: cb_system_init_done()\n");
+		os_printf("\n[+] DBG: SDK version = %s\n", system_get_sdk_version());
+	#endif
 
 	// Make sure the sensor is powered off.
 	do_toggle_sesnor(false);
@@ -941,14 +1111,13 @@ cb_system_init_done(void) {
 	// Make sure VCC probe GPIO is on logic low.
 	do_toggle_vcc_probe(false);
 
+	// Clear WiFi scan result and initialize WiFi scan list.
+	do_clear_wifi_scan_result(&ap_list_head);
+	SLIST_INIT(&ap_list_head);
+
 	// Must not be deallocated.
 	buffer_post_form = (char *)os_malloc(8192); // Used by web interface module.
 	config_current = (config_t *)os_malloc(sizeof(config_t));
-
-	#if (ENABLE_DEBUG == 1)
-		os_printf("\n[+] DBG: cb_system_init_done()\n");
-		os_printf("\n[+] DBG: SDK version = %s\n", system_get_sdk_version());
-	#endif
 
 	if(!do_configuration_read()) {
 		return;
