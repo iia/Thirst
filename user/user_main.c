@@ -476,6 +476,15 @@ cb_wifi_scan_done(void *bss_info_list, STATUS status) {
 	bss_info_list_element = (struct bss_info*)bss_info_list;
 
 	while(bss_info_list_element) {
+		if (bss_info_list_element->authmode != AUTH_OPEN && \
+		    bss_info_list_element->authmode != AUTH_WPA_PSK && \
+		    bss_info_list_element->authmode != AUTH_WPA2_PSK && \
+		    bss_info_list_element->authmode != AUTH_WPA_WPA2_PSK) {
+		        bss_info_list_element = bss_info_list_element->next.stqe_next;
+
+		        continue;
+		}
+
 		ap_list_element = \
 			(ap_list_element_t *)malloc(sizeof(ap_list_element_t));
 
