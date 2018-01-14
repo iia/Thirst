@@ -8,8 +8,8 @@
 #include "web_interface.h"
 #include "user_interface.h"
 
-
 // Initialize global variables.
+uint32_t data_rtc = 0;
 ap_list_head_t ap_list_head;
 uint32_t do_notification_next = 0;
 bool waiting_wifi_scan_cb = false;
@@ -29,6 +29,7 @@ config_t config_default = {
 	.the_plant_name = "\0",
 	.the_plant_configuration_password = "1234567890",
 	.the_plant_wifi_ap = "\0",
+	.the_plant_wifi_ap_bssid = "\0",
 	.the_plant_wifi_ap_password = "\0",
 	.the_plant_threshold_percent = 5,
 	.the_plant_threshold_lt_gt = CONFIG_THRESHLOD_LT,
@@ -81,7 +82,7 @@ do_notification(void) {
 	os_bzero(&config_st_interface, sizeof(config_st_interface));
 
 	// Enable station mode.
-	wifi_set_opmode(STATION_MODE);
+	wifi_set_opmode_current(STATION_MODE);
 
 	// WiFi station settings.
 	config_st_interface.bssid_set = 0;
@@ -247,13 +248,7 @@ cb_sock_disconnect(void *arg) {
 		os_printf("\n[+] DBG: cb_sock_disconnect()\n");
 	#endif
 
-	// Keep radio turned off after next wakeup.
-	#if (ENABLE_DEBUG == 1)
-		os_printf("\n[+] DBG: Going to deep sleep mode\n");
-		os_printf("\n[+] DBG: Setting deep sleep option = DEEP_SLEEP_OPTION_NO_RADIO\n");
-	#endif
-
-	system_deep_sleep_set_option(DEEP_SLEEP_OPTION_NO_RADIO);
+	do_set_deep_sleep_mode();
 
 	// Make sure the sensor is powered off.
 	do_toggle_sesnor(false);
@@ -412,7 +407,26 @@ do_get_default_plant_name(char *default_plant_name, uint8_t len) {
 
 bool ICACHE_FLASH_ATTR
 do_save_current_config_to_flash() {
-	uint32_t data_rtc = 0;
+	data_rtc = 0;
+
+	#if (ENABLE_DEBUG == 1)
+		os_printf("\n[+] DBG: do_save_current_config_to_flash()\n");
+	#endif
+
+	if(system_rtc_mem_write(MEM_ADDR_RTC, &data_rtc, 4)) {
+		#if (ENABLE_DEBUG == 1)
+			os_printf("\n[+] DBG: RTC counter reset\n");
+		#endif
+	}
+	else {
+		#if (ENABLE_DEBUG == 1)
+			os_printf("\n[+] DBG: RTC counter reset failed\n");
+		#endif
+
+		do_state_error();
+
+		return false;
+	}
 
 	// Generate checksum of the current config first.
 	config_current->config_hash_pearson = do_get_hash_pearson((uint8_t *)config_current);
@@ -423,6 +437,7 @@ do_save_current_config_to_flash() {
 		os_printf("\nconfig_current->the_plant_name = %s", config_current->the_plant_name);
 		os_printf("\nconfig_current->the_plant_configuration_password = %s", config_current->the_plant_configuration_password);
 		os_printf("\nconfig_current->the_plant_wifi_ap = %s", config_current->the_plant_wifi_ap);
+		os_printf("\nconfig_current->the_plant_wifi_ap_bssid = %s", config_current->the_plant_wifi_ap_bssid);
 		os_printf("\nconfig_current->the_plant_wifi_ap_password = %s", config_current->the_plant_wifi_ap_password);
 		os_printf("\nconfig_current->the_plant_threshold_percent = %d", config_current->the_plant_threshold_percent);
 		os_printf("\nconfig_current->the_plant_threshold_lt_gt = %d", config_current->the_plant_threshold_lt_gt);
@@ -850,12 +865,7 @@ do_read_adc(void) {
 			os_printf("\n[+] DBG: Going to deep sleep mode\n");
 		#endif
 
-		// Keep radio turned off after next wakeup.
-		#if (ENABLE_DEBUG == 1)
-			os_printf("\n[+] DBG: Setting deep sleep option = DEEP_SLEEP_OPTION_NO_RADIO\n");
-		#endif
-
-		system_deep_sleep_set_option(DEEP_SLEEP_OPTION_NO_RADIO);
+		do_set_deep_sleep_mode();
 
 		// Make sure the sensor is powered off.
 		do_toggle_sesnor(false);
@@ -863,6 +873,7 @@ do_read_adc(void) {
 		// Make sure VCC probe GPIO is on logic low.
 		do_toggle_vcc_probe(false);
 
+		do_set_deep_sleep_mode();
 		system_deep_sleep(DEEP_SLEEP_DURATION_US);
 	}
 	else {
@@ -914,7 +925,7 @@ do_state_error(void) {
 	#endif
 
 	// Turn off WiFi.
-	wifi_set_opmode(NULL_MODE);
+	wifi_set_opmode_current(NULL_MODE);
 
 	os_timer_disarm(&timer_generic_software);
 	os_timer_setfn(&timer_generic_software, (os_timer_func_t *)do_state_error_toggle_led, NULL);
@@ -955,9 +966,64 @@ do_led_blue_turn_off(void) {
 }
 
 void ICACHE_FLASH_ATTR
+do_set_deep_sleep_mode(void) {
+	if(data_rtc == 0) {
+		// Timer unit wrapped.
+		#if (ENABLE_DEBUG == 1)
+			os_printf("\n[+] DBG: Handling timer unit wrapper event\n");
+		#endif
+
+		data_rtc++;
+
+		if(system_rtc_mem_write(MEM_ADDR_RTC, &data_rtc, 4)) {
+			#if (ENABLE_DEBUG == 1)
+				os_printf("\n[+] DBG: RTC count up and write = %d\n", data_rtc);
+			#endif
+
+			// Make sure the sensor is powered off.
+			do_toggle_sesnor(false);
+
+			// Make sure VCC probe GPIO is on logic low.
+			do_toggle_vcc_probe(false);
+
+			if(data_rtc >= TWO_HOURS_IN_A_DAY) {
+				system_deep_sleep_set_option(DEEP_SLEEP_OPTION_SAME_AS_PWRUP);
+			}
+			else {
+				system_deep_sleep_set_option(DEEP_SLEEP_OPTION_NO_RADIO);
+			}
+
+			system_deep_sleep(DEEP_SLEEP_DURATION_US);
+		}
+		else {
+			#if (ENABLE_DEBUG == 1)
+				os_printf("\n[+] DBG: RTC memory write failed\n");
+			#endif
+
+			do_state_error();
+		}
+	}
+	else if(data_rtc >= TWO_HOURS_IN_A_DAY) {
+		// Do RF calibration after next wakeup.
+		#if (ENABLE_DEBUG == 1)
+			os_printf("\n[+] DBG: Setting deep sleep option = DEEP_SLEEP_OPTION_SAME_AS_PWRUP\n");
+		#endif
+
+		system_deep_sleep_set_option(DEEP_SLEEP_OPTION_SAME_AS_PWRUP);
+	}
+	else {
+		// Keep radio turned off after next wakeup.
+		#if (ENABLE_DEBUG == 1)
+			os_printf("\n[+] DBG: Setting deep sleep option = DEEP_SLEEP_OPTION_NO_RADIO\n");
+		#endif
+
+		system_deep_sleep_set_option(DEEP_SLEEP_OPTION_NO_RADIO);
+	}
+}
+
+void ICACHE_FLASH_ATTR
 do_read_counter_value_from_rtc_mem(void) {
-	uint32_t data_rtc = 0;
-	uint32_t ime_duration = 0;
+	data_rtc = 0;
 
 	// RTC memory operations.
 	if(system_rtc_mem_read(MEM_ADDR_RTC, &data_rtc, 4)) {
@@ -965,31 +1031,13 @@ do_read_counter_value_from_rtc_mem(void) {
 			os_printf("\n[+] DBG: RTC memory read = %d\n", data_rtc);
 		#endif
 
-		data_rtc++;
-
-		// Half hour deep sleep duration 48 times = 1 day.
 		if(data_rtc < TWO_HOURS_IN_A_DAY) {
+			data_rtc++;
+
 			if(system_rtc_mem_write(MEM_ADDR_RTC, &data_rtc, 4)) {
 				#if (ENABLE_DEBUG == 1)
 					os_printf("\n[+] DBG: RTC count up and write = %d\n", data_rtc);
 				#endif
-
-				if(data_rtc == TWO_HOURS_IN_A_DAY - 1) {
-					// Do RF calibration after next wakeup.
-					#if (ENABLE_DEBUG == 1)
-						os_printf("\n[+] DBG: Setting deep sleep option = DEEP_SLEEP_OPTION_SAME_AS_PWRUP\n");
-					#endif
-
-					system_deep_sleep_set_option(DEEP_SLEEP_OPTION_SAME_AS_PWRUP);
-				}
-				else {
-					// Keep radio turned off after next wakeup.
-					#if (ENABLE_DEBUG == 1)
-						os_printf("\n[+] DBG: Setting deep sleep option = DEEP_SLEEP_OPTION_NO_RADIO\n");
-					#endif
-
-					system_deep_sleep_set_option(DEEP_SLEEP_OPTION_NO_RADIO);
-				}
 
 				// Make sure the sensor is powered off.
 				do_toggle_sesnor(false);
@@ -997,6 +1045,7 @@ do_read_counter_value_from_rtc_mem(void) {
 				// Make sure VCC probe GPIO is on logic low.
 				do_toggle_vcc_probe(false);
 
+				do_set_deep_sleep_mode();
 				system_deep_sleep(DEEP_SLEEP_DURATION_US);
 			}
 			else {
@@ -1055,8 +1104,8 @@ do_config_mode(void) {
 	os_bzero(&ip, sizeof(ip));
 	os_bzero(&config_ap_interface, sizeof(config_ap_interface));
 
-	// Enable AP mode.
-	wifi_set_opmode(STATIONAP_MODE);
+	// Enable Station + AP mode.
+	wifi_set_opmode_current(STATIONAP_MODE);
 	wifi_softap_dhcps_stop();
 
 	// Set AP mode configuration parameters.
@@ -1114,6 +1163,13 @@ cb_system_init_done(void) {
 		os_printf("\n[+] DBG: SDK version = %s\n", system_get_sdk_version());
 	#endif
 
+	/*
+	 * We enable Station + AP mode instead of NULL mode here because we must
+	 * be ready to handle AP mode anytime.
+	 */
+	wifi_set_opmode_current(STATIONAP_MODE);
+	system_deep_sleep_set_option(DEEP_SLEEP_OPTION_SAME_AS_PWRUP);
+
 	// Make sure the sensor is powered off.
 	do_toggle_sesnor(false);
 
@@ -1125,7 +1181,7 @@ cb_system_init_done(void) {
 	SLIST_INIT(&ap_list_head);
 
 	// Must not be deallocated.
-	buffer_post_form = (char *)os_malloc(8192); // Used by web interface module.
+	buffer_post_form = (char *)os_malloc(4096); // Used by web interface module.
 	config_current = (config_t *)os_malloc(sizeof(config_t));
 
 	if(!do_configuration_read()) {
@@ -1158,8 +1214,6 @@ cb_system_init_done(void) {
 	 * If grounded then 0 (configuration mode button is pressed) otherwise 1.
 	 */
 	gpio_i_config_mode_value = GPIO_INPUT_GET(0);
-
-	os_printf("\n[+] DBG: Configuration mode button state = %d\n", gpio_i_config_mode_value);
 
 	// Generate pearson hash for the configuration that is read from the flash.
 	config_hash = do_get_hash_pearson((uint8_t *)config_current);

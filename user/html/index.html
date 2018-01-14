@@ -20,22 +20,25 @@
 
   <body>
     <!-- Modal-Error: Get settings. -->
-    <div aria-labelledby="modal_error_get_settings"
-    class="modal fade bs-example-modal-lg" data-backdrop="static"
-    id="modal_error_get_settings" role="dialog" tabindex="-1">
+    <div aria-labelledby="modal-error-get-settings"
+         class="modal fade bs-example-modal-lg"
+         data-backdrop="static"
+         id="modal-error-get-settings"
+         role="dialog"
+         tabindex="-1">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header modal-header-danger">
             <h4 class="modal-title">Error</h4>
           </div>
-
           <div class="modal-body">
             Failed to get settings from the device.
           </div>
-
           <div class="modal-footer">
-            <button class="btn btn-success" data-dismiss="modal"
-            type="button" id="btn_modal_error_get_settings_retry">
+            <button class="btn btn-success"
+                    data-dismiss="modal"
+                    type="button"
+                    id="btn-modal-error-get-settings-retry">
               Retry
             </button>
           </div>
@@ -44,35 +47,39 @@
     </div>
 
     <!--
-      Modal-Warning: Save settings.
+    Modal-Warning: Save settings.
 
-      This modal is dynamic in nature as properties of this modal is dynamically
-      updated based on current save procedure state.
+    This modal is dynamic in nature as properties of this modal is dynamically
+    updated based on current save procedure state.
     -->
-    <div class="hidden" id="div_main">
-      <div aria-labelledby="modal_save_settings"
-      class="modal fade bs-example-modal-lg" data-backdrop="static"
-      id="modal_save_settings" role="dialog" tabindex="-1">
+    <div class="hidden" id="div-main">
+      <div aria-labelledby="modal-save-settings"
+           class="modal fade bs-example-modal-lg"
+           data-backdrop="static"
+           id="modal-save-settings"
+           role="dialog"
+           tabindex="-1">
         <div class="modal-dialog">
           <div class="modal-content">
-            <div class="modal-header" id="modal_save_settings_header">
-              <h4 class="modal-title" id="modal_save_settings_header_title">
+            <div class="modal-header" id="modal-save-settings-header">
+              <h4 class="modal-title" id="modal-save-settings-header-title">
                 Information
               </h4>
             </div>
-
-            <div class="modal-body" id="modal_save_settings_body">
+            <div class="modal-body" id="modal-save-settings-body">
               Saving new settings...
             </div>
-
             <div class="modal-footer">
-              <button class="btn btn-success hidden" type="button"
-              id="btn_modal_save_settings_retry">
+              <button class="btn btn-success hidden"
+                      type="button"
+                      id="btn-modal-save-settings-retry">
                 Retry
               </button>
-
-              <button class="btn btn-default hidden" data-dismiss="modal"
-              type="button" id="btn_modal_save_settings_cancel" hidden>
+              <button class="btn btn-default hidden"
+                      data-dismiss="modal"
+                      type="button"
+                      id="btn-modal-save-settings-cancel"
+                      hidden>
                 Cancel
               </button>
             </div>
@@ -80,19 +87,96 @@
         </div>
       </div>
 
-      <div aria-labelledby="modal_error_verification_failed"
-      class="modal fade bs-example-modal-lg" data-backdrop="static"
-      id="modal_error_verification_failed" role="dialog" tabindex="-1">
+      <!-- Modal-Error: Verification. -->
+      <div aria-labelledby="modal-error-verification-failed"
+           class="modal fade bs-example-modal-lg"
+           data-backdrop="static"
+           id="modal-error-verification-failed"
+           role="dialog"
+           tabindex="-1">
         <div class="modal-dialog">
           <div class="modal-content">
             <div class="modal-header modal-header-danger">
               <h4 class="modal-title">Error</h4>
             </div>
-
             <div class="modal-body">
               Verification failed. Please verify the marked fields.
             </div>
+            <div class="modal-footer">
+              <button class="btn btn-default"
+                      data-dismiss="modal"
+                      type="button">
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
 
+      <!-- Modal-Information: About. -->
+      <div aria-labelledby="modal-infomation-about"
+           class="modal fade bs-example-modal-lg"
+           data-backdrop="static"
+           id="modal-infomation-about"
+           role="dialog"
+           tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header modal-header-info">
+              <h4 class="modal-title">
+                About
+              </h4>
+            </div>
+            <div class="modal-body">
+              Thirst is a personal hobby project for fun. Current firmware version: v2.
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-default"
+                      data-dismiss="modal"
+                      type="button">
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal-Information: WiFi Scan. -->
+      <div aria-labelledby="modal-information-wifi-scan"
+           class="modal fade bs-example-modal-lg"
+           data-backdrop="static"
+           id="modal-information-wifi-scan"
+           role="dialog"
+           tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header modal-header-info">
+              <h4 class="modal-title">
+                Information
+              </h4>
+            </div>
+            <div class="modal-body">
+              Scanning for WiFi networks. Please wait...
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal-Error: WiFi scan. -->
+      <div aria-labelledby="modal-error-wifi-scan"
+           class="modal fade bs-example-modal-lg"
+           data-backdrop="static"
+           id="modal-error-wifi-scan"
+           role="dialog"
+           tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header modal-header-danger">
+              <h4 class="modal-title">Error</h4>
+            </div>
+            <div class="modal-body">
+              WiFi scan failed.
+            </div>
             <div class="modal-footer">
               <button class="btn btn-default" data-dismiss="modal"
                 type="button">Close</button>
@@ -101,215 +185,249 @@
         </div>
       </div>
 
-      <div aria-labelledby="modal_infomation_about" class="modal fade bs-example-modal-lg"
-      data-backdrop="static" id="modal_infomation_about" role="dialog" tabindex="-1">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header modal-header-info">
-              <h4 class="modal-title">
-                About
-              </h4>
-            </div>
-
-            <div class="modal-body">
-              Thirst is a personal hobby project for fun. Current firmware version: v1.
-            </div>
-
-            <div class="modal-footer">
-              <button class="btn btn-default" data-dismiss="modal" type="button">
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <br/>
       <br/>
 
-      <div class="container container-fluid" id="container_main">
+      <div class="container container-fluid" id="container-main">
         <!-- Start of settings form. -->
-        <form class="form-horizontal" id="form_settings">
+        <form class="form-horizontal" id="form-settings">
           <div class="panel panel-default">
             <div class="panel-heading">
-              <span class="glyphicon glyphicon-grain" style="font-size:1.5em;">
+              <span class="glyphicon glyphicon-grain"
+                    style="font-size:1.5em;">
               </span>
               &nbsp;&nbsp;<font size="3">The Plant</font>
             </div>
 
             <div class="panel-body">
+              <div class="row form-group">
+                <label class="col-sm-3 control-label"
+                       for="the-plant-name">
+                  Plant Name:
+                </label>
+                <div class="col-sm-7">
+                  <input type="text"
+                         class="form-control"
+                         id="the-plant-name"
+                         name="the-plant-name"
+                         maxlength="32"
+                         placeholder="Enter plant's name">
+                  <div class="has-error hidden" id="hb-the-plant-name">
+                    <p class="help-block">
+                      <b>
+                        <small>
+                          Plant name can't be empty, can't contain non-ASCII
+                          characters and must not be more than 32 characters long.
+                        </small>
+                      </b>
+                    </p>
+                  </div>
+                </div>
+              </div>
 
-                <div class="row form-group">
-                  <label class="col-sm-3 control-label" for="the_plant_name">
-                    Plant Name:
+              <div class="row form-group">
+                <label class="col-sm-3 control-label"
+                       for="the-plant-configuration-password">
+                  Configuration Password:
+                </label>
+                <div class="col-sm-5">
+                  <input type="password"
+                         class="form-control"
+                         id="the-plant-configuration-password"
+                         name="the-plant-configuration-password"
+                         maxlength="64"
+                         placeholder="Password of configuration mode access point">
+                  <div class="has-error hidden"
+                       id="hb-the-plant-configuration-password">
+                    <p class="help-block">
+                      <b>
+                        <small>
+                          Password can't be empty, can't contain non-ASCII characters
+                          and must be between 8 and 64 characters long.
+                        </small>
+                      </b>
+                    </p>
+                  </div>
+                </div>
+                <div class="checkbox col-sm-2">
+                  <label>
+                    <input id="the-plant-configuration-password-show"
+                           type="checkbox" />Show Characters
                   </label>
-                  <div class="col-sm-7">
-                    <input type="text" class="form-control" id="the_plant_name"
-                    name="the_plant_name" maxlength="32" placeholder="Enter plant's name">
-                    <div class="has-error hidden" id="hb_the_plant_name">
-                      <p class="help-block">
-                        <b>
-                          <small>
-                            Plant name can't be empty, can't contain non-ASCII
-                            characters and must not be more than 32 characters long.
-                          </small>
-                        </b>
-                      </p>
-                    </div>
+                </div>
+              </div>
+
+              <div class="row form-group">
+                <label class="col-sm-3 control-label"
+                       for="the-plant-wifi-ap">
+                  WiFi Access Point:
+                </label>
+                <div class="col-sm-5">
+                  <select class="form-control"
+                          id="the-plant-wifi-ap"
+                          name="the-plant-wifi-ap">
+                  </select>
+                  <div class="has-error hidden"
+                       id="hb-the-plant-wifi-ap">
+                    <p class="help-block">
+                      <b>
+                        <small>
+                          A valid WiFi access point must be selected.
+                        </small>
+                      </b>
+                    </p>
                   </div>
                 </div>
+                <div class="col-sm-2 text-left">
+                  <button type="button"
+                          id="btn-do-wifi-scan"
+                          class="btn btn-default">
+                    <span class="glyphicon glyphicon-search"
+                          aria-hidden="true">
+                    </span>
+                  </button>
+                </div>
+              </div>
 
-                <div class="row form-group">
-                  <label class="col-sm-3 control-label"
-                  for="the_plant_configuration_password">
-                    Configuration Password:
+              <div class="row form-group collapse"
+                   id="row-wifi-ap-info">
+                <div class="col-sm-offset-3 col-sm-3">
+                  <div class="glyphicon glyphicon-signal"
+                       style="font-size:1em;">
+                  </div>
+                  <div id="the-plant-wifi-ap-info-signal"
+                       style="display: inline-block;">
+                    : -
+                  </div>&#37;
+                </div>
+                <div class="col-sm-3">
+                  <div class="glyphicon glyphicon-lock"
+                       style="font-size:1em;">
+                  </div>
+                  <div id="the-plant-wifi-ap-info-authmode"
+                       style="display: inline-block;">
+                    : -
+                  </div>
+                </div>
+              </div>
+
+              <div class="row form-group collapse" id="row-wifi-password">
+                <label class="col-sm-3 control-label"
+                       for="the-plant-wifi-ap-password">
+                  WiFi Password:
+                </label>
+                <div class="col-sm-5">
+                  <input type="password"
+                         class="form-control"
+                         id="the-plant-wifi-ap-password"
+                         name="the-plant-wifi-ap-password"
+                         maxlength="64"
+                         placeholder="WiFi password for the access point">
+                  <div class="has-error hidden"
+                       id="hb-the-plant-wifi-ap-password">
+                    <p class="help-block">
+                      <b>
+                        <small>
+                          Password can't be empty, contain non-ASCII characters
+                          and be more than 64 characters long.
+                        </small>
+                      </b>
+                    </p>
+                  </div>
+                </div>
+                <div class="checkbox col-sm-2">
+                  <label>
+                    <input id="the-plant-wifi-ap-password-show"
+                           type="checkbox" />Show Characters
                   </label>
-                  <div class="col-sm-5">
-                    <input type="password" class="form-control"
-                    id="the_plant_configuration_password"
-                    name="the_plant_configuration_password" maxlength="64"
-                    placeholder="Password of configuration mode access point">
-                    <div class="has-error hidden" id="hb_the_plant_configuration_password">
-                      <p class="help-block">
-                        <b>
-                          <small>
-                            Password can't be empty, can't contain non-ASCII characters
-                            and must be between 8 and 64 characters long.
-                          </small>
-                        </b>
-                      </p>
-                    </div>
-                  </div>
-                  <div class="checkbox col-sm-2">
-                      <label>
-                        <input id="the_plant_configuration_password_show"
-                        type="checkbox" />
-                        Show Characters
-                      </label>
+                </div>
+              </div>
+
+              <div class="row form-group">
+                <label class="col-sm-3 control-label"
+                       for="the-plant-threshold-percent">
+                  Threshold:
+                </label>
+                <div class="col-sm-2 text-right">
+                  Notify when
+                </div>
+                <div class="col-sm-2">
+                  <input type="number"
+                         class="form-control text-center"
+                         id="the-plant-threshold-percent"
+                         name="the-plant-threshold-percent"
+                         min="1"
+                         max="100"
+                         value="0">
+                  <div class="has-error hidden"
+                       id="hb-the-plant-threshold-percent">
+                    <p class="help-block">
+                      <b>
+                        <small>
+                          Value must be within 1 to 100.
+                        </small>
+                      </b>
+                    </p>
                   </div>
                 </div>
-
-                <div class="row form-group">
-                  <label class="col-sm-3 control-label" for="the_plant_wifi_ap">
-                    WiFi Access Point:
-                  </label>
-                  <div class="col-sm-7">
-                    <input type="text" class="form-control" id="the_plant_wifi_ap"
-                    name="the_plant_wifi_ap" maxlength="32"
-                    placeholder="WiFi access point to use for internet connectivity">
-                    <div class="has-error hidden" id="hb_the_plant_wifi_ap">
-                      <p class="help-block">
-                        <b>
-                          <small>
-                            Access point name can't be empty, can't contain non-ASCII
-                            characters and must not be more than 32 characters long.
-                          </small>
-                        </b>
-                      </p>
-                    </div>
-                  </div>
+                <div class="col-sm-5">
+                  percent
                 </div>
+              </div>
 
-                <div class="row form-group">
-                  <label class="col-sm-3 control-label" for="the_plant_wifi_ap_password">
-                    WiFi Password:
-                  </label>
-                  <div class="col-sm-5">
-                    <input type="password" class="form-control"
-                    id="the_plant_wifi_ap_password" name="the_plant_wifi_ap_password"
-                    maxlength="64" placeholder="WiFi password for the access point">
-                    <div class="has-error hidden" id="hb_the_plant_wifi_ap_password">
-                      <p class="help-block">
-                        <b>
-                          <small>
-                            Password can't contain non-ASCII characters and must
-                            not be more than 64 characters long.
-                          </small>
-                        </b>
-                      </p>
-                    </div>
-                  </div>
-                  <div class="checkbox col-sm-2">
-                      <label>
-                        <input id="the_plant_wifi_ap_password_show"
-                        type="checkbox" />
-                        Show Characters
-                      </label>
-                  </div>
+              <div class="row form-group">
+                <div class="col-sm-offset-3 col-sm-2">
+                  <select class="form-control"
+                          id="the-plant-threshold-lt-gt"
+                          name="the-plant-threshold-lt-gt">
+                    <option value="1">less</option>
+                    <option value="2">more</option>
+                  </select>
                 </div>
-
-                <div class="row form-group">
-                  <label class="col-sm-3 control-label" for="the_plant_threshold_percent">
-                    Threshold:
-                  </label>
-
-                  <div class="col-sm-2 text-right">
-                    Notify when
-                  </div>
-
-                  <div class="col-sm-2">
-                    <input type="number" class="form-control text-center"
-                    id="the_plant_threshold_percent" name="the_plant_threshold_percent"
-                    min="1" max="100" value="0">
-                      <div class="has-error hidden" id="hb_the_plant_threshold_percent">
-                        <p class="help-block">
-                            <b>
-                              <small>
-                                Value must be within 1 to 100.
-                              </small>
-                            </b>
-                        </p>
-                      </div>
-                  </div>
-
-                  <div class="col-sm-5">
-                    percent
-                  </div>
+                <div class="col-sm-2 text-center">
+                  than current moisture
                 </div>
-
-                <div class="row form-group">
-                  <div class="col-sm-offset-3 col-sm-2">
-                    <select class="form-control" id="the_plant_threshold_lt_gt"
-                    name="the_plant_threshold_lt_gt">
-                      <option value="1">less</option>
-                      <option value="2">more</option>
-                    </select>
-                  </div>
-                  <div class="col-sm-2 text-center">
-                    than current moisture
-                  </div>
-                  <div class="col-sm-2">
-                    <input type="text" class="form-control text-center"
-                    id="registered_value" name="registered_value" readonly>
-                  </div>
-                  <div class="col-sm-1 text-left">
-                    <button type="button" id="btn_get_sesnor_reading" class="btn btn-default">
-                      <span class="glyphicon glyphicon-refresh" aria-hidden="true">
-                      </span>
-                    </button>
-                  </div>
+                <div class="col-sm-2">
+                  <input type="text"
+                         class="form-control text-center"
+                         id="registered-value"
+                         name="registered-value"
+                         readonly>
                 </div>
+                <div class="col-sm-1 text-left">
+                  <button type="button"
+                          id="btn-get-sesnor-reading"
+                          class="btn btn-default">
+                    <span class="glyphicon glyphicon-refresh"
+                          aria-hidden="true">
+                    </span>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
 
           <div class="panel panel-default">
             <div class="panel-heading">
-              <span class="glyphicon glyphicon-bullhorn" style="font-size:1.5em;">
+              <span class="glyphicon glyphicon-bullhorn"
+                    style="font-size:1.5em;">
               </span>
               &nbsp;&nbsp;<font size="3">Notifications</font>
             </div>
 
             <div class="panel-body">
-
               <div class="row form-group">
-                <label class="col-sm-3 control-label" for="notification_email">
+                <label class="col-sm-3 control-label" for="notification-email">
                   Email:
                 </label>
                 <div class="col-sm-7">
-                  <input type="email" class="form-control" id="notification_email"
-                  name="notification_email" maxlength="254"
-                  placeholder="Email address to send notifications to">
-                  <div class="has-error hidden" id="hb_notification_email">
+                  <input type="email"
+                         class="form-control"
+                         id="notification-email"
+                         name="notification-email"
+                         maxlength="64"
+                         placeholder="Email address to send notifications to">
+                  <div class="has-error hidden" id="hb-notification-email">
                     <p class="help-block">
                       <b>
                         <small>
@@ -321,42 +439,56 @@
                   </div>
                 </div>
               </div>
-
               <div class="row form-group">
-                <label class="col-sm-3 control-label" for="notification_email_subject">
+                <label class="col-sm-3 control-label"
+                       for="notification-email-subject">
                   Subject:
                 </label>
                 <div class="col-sm-7">
-                  <input type="email" class="form-control" id="notification_email_subject"
-                  name="notification_email_subject" maxlength="64"
-                  placeholder="Subject of the notification email">
-                  <div class="has-error hidden" id="hb_notification_email_subject">
+                  <input type="email"
+                         class="form-control"
+                         id="notification-email-subject"
+                         name="notification-email-subject"
+                         maxlength="64"
+                         placeholder="Subject of the notification email">
+                  <div class="has-error hidden"
+                       id="hb-notification-email-subject">
                     <p class="help-block">
                       <b>
                         <small>
-                          Subject can't be empty, can't contain non-ASCII
-                          characters and must not be more than 64 characters long.
+                          Subject can't be empty, must not be more than 64
+                          characters long and can only contain alphanumeric characters,
+                          blank spaces, question mark, exclamation mark, hyphen,
+                          comma and dot.
                         </small>
                       </b>
                     </p>
                   </div>
                 </div>
               </div>
-
               <div class="row form-group">
-                <label class="col-sm-3 control-label" for="notification_email_message">
+                <label class="col-sm-3 control-label"
+                       for="notification-email-message">
                   Message:
                 </label>
                 <div class="col-sm-7">
-                  <textarea style="resize:none" class="form-control" rows="4"
-                  placeholder="Body of the notification email" id="notification_email_message"
-                  name="notification_email_message" maxlength="2048"></textarea>
-                  <div class="has-error hidden" id="hb_notification_email_message">
+                  <textarea style="resize:none"
+                            class="form-control"
+                            rows="4"
+                            placeholder="Body of the notification email"
+                            id="notification-email-message"
+                            name="notification-email-message"
+                            maxlength="512">
+                  </textarea>
+                  <div class="has-error hidden"
+                       id="hb-notification-email-message">
                     <p class="help-block">
                       <b>
                         <small>
-                          Email notification's body can't be empty and must not
-                          be more than 2048 characters long.
+                          Email notification's body can't be empty, must not
+                          be more than 512 characters long and can only contain
+                          alphanumeric characters, blank spaces, question mark,
+                          exclamation mark, hyphen, comma and dot.
                         </small>
                       </b>
                     </p>
@@ -370,15 +502,21 @@
 
         <div class="row">
           <div class="col-sm-6">
-            <button type="button" class="btn btn-block btn-success btn-default
-            spacer-bottom" id="btn_apply"><span class="glyphicon glyphicon-ok"
-            aria-hidden="true">
-            </span>&nbsp;&nbsp;Apply</button>
+            <button type="button"
+                    class="btn btn-block btn-success btn-default
+                    spacer-bottom"
+                    id="btn-apply">
+              <span class="glyphicon glyphicon-ok"
+                    aria-hidden="true">
+              </span>&nbsp;&nbsp;Apply
+            </button>
           </div>
           <div class="col-sm-6">
-            <button type="button" id="btn_about" class="btn btn-block btn-default
-            spacer-bottom">
-              <span class="glyphicon glyphicon-info-sign" aria-hidden="true">
+            <button type="button"
+                    id="btn-about"
+                    class="btn btn-block btn-default spacer-bottom">
+              <span class="glyphicon glyphicon-info-sign"
+                    aria-hidden="true">
               </span>&nbsp;&nbsp;About
             </button>
           </div>
@@ -390,7 +528,11 @@
 
       <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
       <script src="js/jquery.min.js"></script>
-      <!-- Include all compiled plugins (below), or include individual files as needed -->
+
+      <!--
+      Include all compiled plugins (below), or include individual files
+      as needed
+      -->
       <script src="js/bootstrap.min.js"></script>
     </div>
   </body>
@@ -398,54 +540,153 @@
 
 <script type="text/javascript">
   // Constants.
+  var AUTH_OPEN = 0;
+  var AUTH_WPA_PSK = 2;
+  var AUTH_WPA2_PSK = 3;
+  var AUTH_WPA_WPA2_PSK = 4;
   var JSON_STATUS_OK = 1;
   var JSON_STATUS_FAILED = 2;
   var TIMEOUT_GENERIC = 16000; // 16 seconds.
-  var TIMEOUT_GET_SENSOR_READING = 4000 // 4 seconds.
+  var TIMEOUT_START_WIFI_SCAN = 4000; // 4 seconds.
+  var TIMEOUT_GET_SENSOR_READING = 4000; // 4 seconds.
+  var TIMEOUT_GET_WIFI_SCAN_RESULT = 4000; // 4 seconds.
+  var WAIT_WIFI_SCAN_GET_RESULT = 4000; // 4 seconds.
   var REQUEST_JSON_GET_SETTINGS = 1;
   var REQUEST_JSON_GET_SENSOR_READING = 2;
   var REQUEST_JSON_SAVE_SETTINGS = 3;
+  var REQUEST_JSON_START_WIFI_SCAN = 4;
+  var REQUEST_JSON_GET_WIFI_SCAN_RESULT = 5;
+
+  var lastReadConfiguration = null;
 
   // UI element events.
-  $('#btn_modal_error_get_settings_retry').click(function(e) {
+  $('#btn-modal-error-get-settings-retry').click(function(e) {
     window.location.replace(window.location.protocol + '//' +
-      window.location.hostname + '/');
+    window.location.hostname + '/');
     window.location.reload(true);
   });
 
-  $('#btn_modal_save_settings_retry').click(function(e) {
-    $('#modal_save_settings_header').removeClass('modal-header-danger');
-    $('#modal_save_settings_header').addClass('modal-header-info');
-    $('#modal_save_settings_header_title').text('Information');
-    $('#modal_save_settings_body').text('Saving settings...');
-    $('#btn_modal_save_settings_retry').addClass('hidden');
-    $('#btn_modal_save_settings_cancel').addClass('hidden');
-    $('#modal_save_settings').modal('show');
+  $('#btn-modal-save-settings-retry').click(function(e) {
+    $('#modal-save-settings-header').removeClass('modal-header-danger');
+    $('#modal-save-settings-header').addClass('modal-header-info');
+    $('#modal-save-settings-header-title').text('Information');
+    $('#modal-save-settings-body').text('Saving settings...');
+    $('#btn-modal-save-settings-retry').addClass('hidden');
+    $('#btn-modal-save-settings-cancel').addClass('hidden');
+    $('#modal-save-settings').modal('show');
 
     saveSettings();
   });
 
-  $('#the_plant_configuration_password_show').change(function(e) {
-    if (this.checked) {
-      $('#the_plant_configuration_password').attr("type", "text");
+  $('#the-plant-wifi-ap').change(function(e) {
+    var valuesAP = JSON.parse($(this).find('option:selected').val());
+
+    // No APs found.
+    if(valuesAP == null) {
+      $('#row-wifi-ap-info').collapse('hide');
+      $('#row-wifi-password').collapse('hide');
+
+      return;
     }
-    else {
-      $('#the_plant_configuration_password').attr("type", "password");
+
+    $('#the-plant-wifi-ap-info-signal').text(': ' + valuesAP.signal);
+
+    switch(valuesAP.authmode) {
+      case AUTH_OPEN:
+        $('#the-plant-wifi-ap-info-authmode').text(': Open');
+        $('#row-wifi-password').collapse('hide');
+
+        break;
+
+      case AUTH_WPA_PSK:
+        $('#the-plant-wifi-ap-info-authmode').text(': WPA');
+        $('#row-wifi-password').collapse('show');
+
+        break;
+
+      case AUTH_WPA2_PSK:
+        $('#the-plant-wifi-ap-info-authmode').text(': WPA2');
+        $('#row-wifi-password').collapse('show');
+
+        break;
+
+      case AUTH_WPA_WPA2_PSK:
+        $('#the-plant-wifi-ap-info-authmode').text(': WPA/WPA2');
+        $('#row-wifi-password').collapse('show');
+
+        break;
+
+      default:
+        $('#the-plant-wifi-ap-info-authmode').text(': Unsupported');
+        $('#row-wifi-password').collapse('hide');
+
+        break;
     }
   });
 
-  $('#the_plant_wifi_ap_password_show').change(function(e) {
+  $('#the-plant-configuration-password-show').change(function(e) {
     if (this.checked) {
-      $('#the_plant_wifi_ap_password').attr("type", "text");
+      $('#the-plant-configuration-password').attr('type', 'text');
     }
     else {
-      $('#the_plant_wifi_ap_password').attr("type", "password");
+      $('#the-plant-configuration-password').attr('type', 'password');
     }
   });
 
-  $('#btn_get_sesnor_reading').click(function(e) {
-    $('#registered_value').val('Reading sensor...');
-    $('#btn_get_sesnor_reading').prop('disabled', true);
+  $('#btn-do-wifi-scan').click(function(e) {
+    $('#modal-information-wifi-scan').modal('show');
+
+    $.ajax({
+      type: 'POST',
+      url: '/start_wifi_scan.cgi',
+      data: {
+        'request': REQUEST_JSON_START_WIFI_SCAN,
+        'data': null
+      },
+      dataType: 'json',
+      timeout: TIMEOUT_START_WIFI_SCAN,
+      success: function(data) {
+        setTimeout(function(e) {
+          $.ajax({
+            type: 'POST',
+            url: '/get_wifi_scan_result.cgi',
+            data: {
+              'request': REQUEST_JSON_GET_WIFI_SCAN_RESULT,
+              'data': null
+            },
+            dataType: 'json',
+            timeout: TIMEOUT_GET_WIFI_SCAN_RESULT,
+            success: function(data) {
+              $('#modal-information-wifi-scan').modal('hide');
+              doUpdateWiFiAPList(data);
+            },
+            error: function(request, status, error) {
+              $('#modal-information-wifi-scan').modal('hide');
+              $('#modal-error-wifi-scan').modal('show');
+            }
+          });
+        },
+        WAIT_WIFI_SCAN_GET_RESULT);
+      },
+      error: function(request, status, error) {
+        $('#modal-information-wifi-scan').modal('hide');
+        $('#modal-error-wifi-scan').modal('show');
+      }
+    });
+  });
+
+  $('#the-plant-wifi-ap-password-show').change(function(e) {
+    if (this.checked) {
+      $('#the-plant-wifi-ap-password').attr('type', 'text');
+    }
+    else {
+      $('#the-plant-wifi-ap-password').attr('type', 'password');
+    }
+  });
+
+  $('#btn-get-sesnor-reading').click(function(e) {
+    $('#registered-value').val('Reading sensor...');
+    $('#btn-get-sesnor-reading').prop('disabled', true);
 
     $.ajax({
       type: 'POST',
@@ -457,188 +698,316 @@
       dataType: 'json',
       timeout: TIMEOUT_GET_SENSOR_READING,
       success: function(data) {
-        $('#btn_get_sesnor_reading').prop('disabled', false);
+        $('#btn-get-sesnor-reading').prop('disabled', false);
 
-        data = JSON.parse(JSON.stringify(data));
+        var _data = JSON.parse(JSON.stringify(data));
 
-        if(data.request === REQUEST_JSON_GET_SENSOR_READING &&
-          data.status === JSON_STATUS_OK) {
-            $('#registered_value').val(String(data.data));
+        if(_data.request === REQUEST_JSON_GET_SENSOR_READING &&
+           _data.status === JSON_STATUS_OK) {
+             $('#registered-value').val(String(_data.data));
         }
         else {
-          $('#registered_value').val('Error. Try again...');
+          $('#registered-value').val('Error. Try again...');
         }
       },
       error: function(request, status, error) {
-        $('#btn_get_sesnor_reading').prop('disabled', false);
-        $('#registered_value').val('Error. Try again...');
+        $('#btn-get-sesnor-reading').prop('disabled', false);
+        $('#registered-value').val('Error. Try again...');
       }
     });
   });
 
-  $('#btn_apply').click(function(e) {
-    if(do_verify()) {
-      $('#modal_save_settings_header').removeClass('modal-header-danger');
-      $('#modal_save_settings_header').addClass('modal-header-info');
-      $('#modal_save_settings_header_title').text('Information');
-      $('#modal_save_settings_body').text('Saving settings...');
-      $('#btn_modal_save_settings_retry').addClass('hidden');
-      $('#btn_modal_save_settings_cancel').addClass('hidden');
-      $('#modal_save_settings').modal('show');
+  $('#btn-apply').click(function(e) {
+    if(doVerify()) {
+      $('#modal-save-settings-header').removeClass('modal-header-danger');
+      $('#modal-save-settings-header').addClass('modal-header-info');
+      $('#modal-save-settings-header-title').text('Information');
+      $('#modal-save-settings-body').text('Saving settings...');
+      $('#btn-modal-save-settings-retry').addClass('hidden');
+      $('#btn-modal-save-settings-cancel').addClass('hidden');
+      $('#modal-save-settings').modal('show');
 
       saveSettings();
     }
     else {
-      $('#modal_error_verification_failed').modal('show');
+      $('#modal-error-verification-failed').modal('show');
     }
   });
 
-  $('#btn_about').click(function(e) {
-    $('#modal_infomation_about').modal('show');
+  $('#btn-about').click(function(e) {
+    $('#modal-infomation-about').modal('show');
   });
 
   // Functions.
-  function isASCII(string_to_check) {
-    return /^[\x00-\x7F]*$/.test(string_to_check);
+  function isASCII(stringCheck) {
+    return /^[\x00-\x7F]*$/.test(stringCheck);
   }
 
-  function do_verify(e) {
-    var the_plant_name = $('#the_plant_name').val();
-    var the_plant_configuration_password = $('#the_plant_configuration_password').val();
-    var the_plant_wifi_ap = $('#the_plant_wifi_ap').val();
-    var the_plant_wifi_ap_password = $('#the_plant_wifi_ap_password').val();
-    var the_plant_threshold_percent = $('#the_plant_threshold_percent').val();
-    var the_plant_threshold_lt_gt = $('#the_plant_threshold_lt_gt').val();
-    var registered_value = $('#registered_value').val();
-    var notification_email = $('#notification_email').val();
-    var notification_email_subject = $('#notification_email_subject').val();
-    var notification_email_message = $('#notification_email_message').val();
+  function doUpdateWiFiAPList(data) {
+    var option = null;
+    var _data = JSON.parse(JSON.stringify(data));
 
+    $('#the-plant-wifi-ap').empty();
+
+    _data.data.forEach(function(entry) {
+      option = new Option(entry.s,
+                          '{"ssid":"' +
+                          entry.s +
+                          '", "bssid":"' +
+                          entry.b +
+                          '", "signal":' +
+                          Math.min(Math.max(2 * (entry.r + 100), 0), 100) +
+                          ', "authmode":' +
+                          entry.a +
+                          '}');
+
+      $('#the-plant-wifi-ap').append(option);
+    });
+
+    doUpdateWiFiAPListGUI();
+  }
+
+  function doVerify() {
     var verified = true;
+    var thePlantName = $('#the-plant-name').val();
+    var thePlantConfigurationPassword = $('#the-plant-configuration-password').val();
+    var thePlantWiFiAP = $('#the-plant-wifi-ap option:selected').text();
+    var thePlantWiFiAPPassword = $('#the-plant-wifi-ap-password').val();
+    var thePlantThresholdPercent = $('#the-plant-threshold-percent').val();
+    var thePlantThresholdLTGT = $('#the-plant-threshold-lt-gt').val();
+    var registeredValue = $('#registered-value').val();
+    var notificationEmail = $('#notification-email').val();
+    var notificationEmailSubject = $('#notification-email-subject').val();
+    var notificationEmailMessage = $('#notification-email-message').val();
 
-    if(the_plant_name.length < 1 || the_plant_name.length > 32 ||
-      !isASCII(the_plant_name)) {
-        verified = false;
-        $('#hb_the_plant_name').removeClass('hidden');
+    if(thePlantName.length < 1 || !isASCII(thePlantName)) {
+      verified = false;
+
+      $('#hb-the-plant-name').removeClass('hidden');
     }
     else {
-      $('#hb_the_plant_name').addClass('hidden');
+      $('#hb-the-plant-name').addClass('hidden');
     }
 
-    if(the_plant_configuration_password.length < 8 ||
-      the_plant_configuration_password.length > 64 ||
-      !isASCII(the_plant_configuration_password)) {
-        verified = false;
-        $('#hb_the_plant_configuration_password').removeClass('hidden');
+    if(thePlantConfigurationPassword.length < 8 ||
+       !isASCII(thePlantConfigurationPassword)) {
+          verified = false;
+
+          $('#hb-the-plant-configuration-password').removeClass('hidden');
     }
     else {
-      $('#hb_the_plant_configuration_password').addClass('hidden');
+      $('#hb-the-plant-configuration-password').addClass('hidden');
     }
 
-    if(the_plant_wifi_ap.length < 1 ||
-      the_plant_wifi_ap.length > 32 ||
-      !isASCII(the_plant_wifi_ap)) {
-        verified = false;
-        $('#hb_the_plant_wifi_ap').removeClass('hidden');
+    if(thePlantWiFiAP.length < 1 ||
+       thePlantWiFiAP.length > 32 ||
+       !isASCII(thePlantWiFiAP) ||
+       $('#the-plant-wifi-ap option:selected').val() === null) {
+          verified = false;
+
+          $('#hb-the-plant-wifi-ap').removeClass('hidden');
     }
     else {
-      $('#hb_the_plant_wifi_ap').addClass('hidden');
+      $('#hb-the-plant-wifi-ap').addClass('hidden');
     }
 
-    if(the_plant_wifi_ap_password.length > 64 ||
-      !isASCII(the_plant_wifi_ap_password)) {
-        verified = false;
-        $('#hb_the_plant_wifi_ap_password').removeClass('hidden');
-    }
-    else {
-      $('#hb_the_plant_wifi_ap_password').addClass('hidden');
+    if($('#the-plant-wifi-ap option:selected').val() !== null &&
+       JSON.parse($('#the-plant-wifi-ap option:selected').val()).authmode !== AUTH_OPEN) {
+          if(thePlantWiFiAPPassword.length < 1 || !isASCII(thePlantWiFiAPPassword)) {
+            verified = false;
+
+            $('#hb-the-plant-wifi-ap-password').removeClass('hidden');
+          }
+          else {
+            $('#hb-the-plant-wifi-ap-password').addClass('hidden');
+          }
     }
 
-    if(the_plant_threshold_percent < 1 || the_plant_threshold_percent > 100) {
-        verified = false;
-        $('#hb_the_plant_threshold_percent').removeClass('hidden');
+    if(thePlantThresholdPercent < 1 || thePlantThresholdPercent > 100) {
+      verified = false;
+
+      $('#hb-the-plant-threshold-percent').removeClass('hidden');
     }
     else {
-      $('#hb_the_plant_threshold_percent').addClass('hidden');
+      $('#hb-the-plant-threshold-percent').addClass('hidden');
     }
 
     // TODO: Add more detailed email address check.
-    if(notification_email.length < 1 || notification_email.length > 254 ||
-      !isASCII(notification_email)) {
-        verified = false;
-        $('#hb_notification_email').removeClass('hidden');
+    if(notificationEmail.length < 1 ||
+       !isASCII(notificationEmail) ||
+       !notificationEmail.match(/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/)) {
+          verified = false;
+
+          $('#hb-notification-email').removeClass('hidden');
     }
     else {
-      $('#hb_notification_email').addClass('hidden');
+      $('#hb-notification-email').addClass('hidden');
     }
 
-    if(notification_email_subject.length < 1 || notification_email_subject.length > 64) {
-        verified = false;
-        $('#hb_notification_email_subject').removeClass('hidden');
+    if(notificationEmailSubject.length < 1 ||
+       !notificationEmailSubject.match(/^[a-zA-Z0-9 .,!?-]+$/)) {
+          verified = false;
+
+          $('#hb-notification-email-subject').removeClass('hidden');
     }
     else {
-      $('#hb_notification_email_subject').addClass('hidden');
+      $('#hb-notification-email-subject').addClass('hidden');
     }
 
-    if(notification_email_message.length < 1 || notification_email_message.length > 2048) {
-        verified = false;
-        $('#hb_notification_email_message').removeClass('hidden');
+    if(notificationEmailMessage.length < 1 ||
+       notificationEmailMessage.length > 512 ||
+       !notificationEmailMessage.match(/^[a-zA-Z0-9 .,!?-]+$/)) {
+          verified = false;
+
+          $('#hb-notification-email-message').removeClass('hidden');
     }
     else {
-      $('#hb_notification_email_message').addClass('hidden');
+      $('#hb-notification-email-message').addClass('hidden');
     }
 
     return verified;
   }
 
-  function updateSettingsGUI(data) {
-    $('#the_plant_name').val(data.the_plant_name);
-    $('#the_plant_configuration_password').val(data.the_plant_configuration_password);
-    $('#the_plant_wifi_ap').val(data.the_plant_wifi_ap);
-    $('#the_plant_wifi_ap_password').val(data.the_plant_wifi_ap_password);
-    $('#the_plant_threshold_percent').val(data.the_plant_threshold_percent);
-    $('#the_plant_threshold_lt_gt').val(data.the_plant_threshold_lt_gt);
-    $('#registered_value').val(data.registered_value);
-    $('#notification_email').val(data.notification_email);
-    $('#notification_email_subject').val(data.notification_email_subject);
-    $('#notification_email_message').val(data.notification_email_message);
+  function doUpdateWiFiAPListGUI() {
+    if($('#the-plant-wifi-ap option').size() > 0) {
+      $('#the-plant-wifi-ap').prop('disabled', false);
+      $('#the-plant-wifi-ap').prop('selectedIndex', 0);
+      $('#the-plant-wifi-ap').change();
+      $('#row-wifi-ap-info').collapse('show');
+      $('#row-wifi-password').collapse('show');
+
+
+      if(lastReadConfiguration.the_plant_wifi_ap_bssid) {
+        $("#the-plant-wifi-ap option").each(function(index, option){
+          if(JSON.parse(option.value).bssid != lastReadConfiguration.the_plant_wifi_ap_bssid) {
+            return true;
+          }
+
+          $("#the-plant-wifi-ap").prop('selectedIndex', index);
+          $("#the-plant-wifi-ap").change();
+
+          return false;
+        });
+      }
+    }
+    else {
+      $('#the-plant-wifi-ap').empty();
+      $('#the-plant-wifi-ap').append(new Option('No APs found. Scan again ?',
+                                     null));
+      $('#the-plant-wifi-ap').change();
+      $('#the-plant-wifi-ap').prop('disabled', 'disabled');
+      $('#row-wifi-ap-info').collapse('hide');
+      $('#row-wifi-password').collapse('hide');
+    }
   }
 
-  function getSettings(e) {
+  function updateSettingsGUI(data, scanData) {
+    if(data) {
+      lastReadConfiguration = data;
+    }
+    else {
+      lastReadConfiguration = null;
+    }
+
+    doUpdateWiFiAPList(scanData);
+
+    $('#the-plant-name').val(data.the_plant_name);
+    $('#the-plant-configuration-password').val(data.the_plant_configuration_password);
+    $('#the-plant-wifi-ap-password').val(data.the_plant_wifi_ap_password);
+    $('#the-plant-threshold-percent').val(data.the_plant_threshold_percent);
+    $('#the-plant-threshold-lt-gt').val(data.the_plant_threshold_lt_gt);
+    $('#registered-value').val(data.registered_value);
+    $('#notification-email').val(data.notification_email);
+    $('#notification-email-subject').val(data.notification_email_subject);
+    $('#notification-email-message').val(data.notification_email_message);
+  }
+
+  function getSettings() {
     $.ajax({
       type: 'POST',
-      url: '/get_settings.cgi',
+      url: '/start_wifi_scan.cgi',
       data: {
-        'request': REQUEST_JSON_GET_SETTINGS,
+        'request': REQUEST_JSON_START_WIFI_SCAN,
         'data': null
       },
       dataType: 'json',
-      timeout: TIMEOUT_GENERIC,
+      timeout: TIMEOUT_START_WIFI_SCAN,
       success: function(data) {
-        if (data.request === REQUEST_JSON_GET_SETTINGS &&
-          data.status === JSON_STATUS_OK) {
-          updateSettingsGUI(data.data);
-          $('#div_main').removeClass('hidden');
-        }
-        else {
-          $('#modal_error_get_settings').modal('show');
-        }
+        setTimeout(function(e) {
+          $.ajax({
+            type: 'POST',
+            url: '/get_wifi_scan_result.cgi',
+            data: {
+              'request': REQUEST_JSON_GET_WIFI_SCAN_RESULT,
+              'data': null
+            },
+            dataType: 'json',
+            timeout: TIMEOUT_GET_WIFI_SCAN_RESULT,
+            success: function(data) {
+              var scanData = data;
+
+              $.ajax({
+                type: 'POST',
+                url: '/get_settings.cgi',
+                data: {
+                  'request': REQUEST_JSON_GET_SETTINGS,
+                  'data': null
+                },
+                dataType: 'json',
+                timeout: TIMEOUT_GENERIC,
+                success: function(data) {
+                  var _data = JSON.parse(JSON.stringify(data));
+
+                  if (_data.request === REQUEST_JSON_GET_SETTINGS &&
+                      _data.status === JSON_STATUS_OK) {
+                    updateSettingsGUI(_data.data, scanData);
+                    $('#div-main').removeClass('hidden');
+                  }
+                  else {
+                    $('#modal-error-get-settings').modal('show');
+                  }
+                },
+                error: function(request, status, error) {
+                  $('#modal-error-get-settings').modal('show');
+                }
+              });
+            },
+            error: function(request, status, error) {
+                  $('#modal-error-get-settings').modal('show');
+            }
+          });
+        }, 4000);
       },
       error: function(request, status, error) {
-        $('#modal_error_get_settings').modal('show');
+        $('#modal-error-get-settings').modal('show');
       }
     });
   }
 
-  function saveSettings(e) {
-    var serialized_form_data = '&' + $('#form_settings').serialize() + '&';
+  function saveSettings() {
+    var currentSettings = {
+                            "thePlantName": $('#the-plant-name').val(),
+                            "thePlantConfigurationPassword": $('#the-plant-configuration-password').val(),
+                            "thePlantWifiAP": $("#the-plant-wifi-ap option:selected").text(),
+                            "thePlantWifiAPBSSID": JSON.parse($('#the-plant-wifi-ap option:selected').val()).bssid,
+                            "thePlantWifiAPPassword": $('#the-plant-wifi-ap-password').val(),
+                            "thePlantThresholdPercent": $('#the-plant-threshold-percent').val(),
+                            "thePlantThresholdLTGT": $('#the-plant-threshold-lt-gt').val(),
+                            "registeredValue": $('#registered-value').val(),
+                            "notificationEmail": $('#notification-email').val(),
+                            "notificationEmailSubject": $('#notification-email-subject').val(),
+                            "notificationEmailMessage": $('#notification-email-message').val()
+                          };
+
+    var dataJSON = JSON.stringify(currentSettings);
 
     $.ajax({
       type: 'POST',
       url: '/save_settings.cgi',
       data: {
         'request': REQUEST_JSON_SAVE_SETTINGS,
-        'data': serialized_form_data
+        'data_json': dataJSON,
+        'data_json_len': dataJSON.length
       },
       dataType: 'json',
       timeout: TIMEOUT_GENERIC,
@@ -646,32 +1015,32 @@
         data = JSON.parse(JSON.stringify(data));
 
         if(data.request = REQUEST_JSON_SAVE_SETTINGS && data.status == JSON_STATUS_OK) {
-          $('#modal_save_settings_header').removeClass('modal-header-danger');
-          $('#modal_save_settings_header').addClass('modal-header-info');
-          $('#modal_save_settings_header_title').text('Information');
-          $('#modal_save_settings_body').text('Settings saved. The device will reset.');
-          $('#btn_modal_save_settings_retry').addClass('hidden');
-          $('#btn_modal_save_settings_cancel').addClass('hidden');
-          $('#modal_save_settings').modal('show');
+          $('#modal-save-settings-header').removeClass('modal-header-danger');
+          $('#modal-save-settings-header').addClass('modal-header-info');
+          $('#modal-save-settings-header-title').text('Information');
+          $('#modal-save-settings-body').text('Settings saved. The device will reset.');
+          $('#btn-modal-save-settings-retry').addClass('hidden');
+          $('#btn-modal-save-settings-cancel').addClass('hidden');
+          $('#modal-save-settings').modal('show');
         }
         else {
-          $('#modal_save_settings_header').removeClass('modal-header-info');
-          $('#modal_save_settings_header').addClass('modal-header-danger');
-          $('#modal_save_settings_header_title').text('Error');
-          $('#modal_save_settings_body').text('Saving settings failed. Retry?');
-          $('#btn_modal_save_settings_retry').removeClass('hidden');
-          $('#btn_modal_save_settings_cancel').removeClass('hidden');
-          $('#modal_save_settings').modal('show');
+          $('#modal-save-settings-header').removeClass('modal-header-info');
+          $('#modal-save-settings-header').addClass('modal-header-danger');
+          $('#modal-save-settings-header-title').text('Error');
+          $('#modal-save-settings-body').text('Saving settings failed. Retry?');
+          $('#btn-modal-save-settings-retry').removeClass('hidden');
+          $('#btn-modal-save-settings-cancel').removeClass('hidden');
+          $('#modal-save-settings').modal('show');
         }
       },
       error: function(request, status, error) {
-        $('#modal_save_settings_header').removeClass('modal-header-info');
-        $('#modal_save_settings_header').addClass('modal-header-danger');
-        $('#modal_save_settings_header_title').text('Error');
-        $('#modal_save_settings_body').text('Saving settings failed. Retry?');
-        $('#btn_modal_save_settings_retry').removeClass('hidden');
-        $('#btn_modal_save_settings_cancel').removeClass('hidden');
-        $('#modal_save_settings').modal('show');
+        $('#modal-save-settings-header').removeClass('modal-header-info');
+        $('#modal-save-settings-header').addClass('modal-header-danger');
+        $('#modal-save-settings-header-title').text('Error');
+        $('#modal-save-settings-body').text('Saving settings failed. Retry?');
+        $('#btn-modal-save-settings-retry').removeClass('hidden');
+        $('#btn-modal-save-settings-cancel').removeClass('hidden');
+        $('#modal-save-settings').modal('show');
       }
     });
   }
@@ -679,5 +1048,4 @@
   $(document).ready(function(e) {
     getSettings();
   });
-
 </script>

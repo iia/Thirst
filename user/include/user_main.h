@@ -43,18 +43,19 @@ Cache-Control: no-cache\r\n\
 #define FMT_LOW_BATTERY_MESSAGE "%s is low on battery. Please recharge."
 
 #define TWO_HOURS_IN_A_DAY 12
-// Two hours in micro seconds.
+// Two hours in uS.
 #define DEEP_SLEEP_DURATION_US 7200000000
 
 // The 5th sector from the last sector of 4MB flash.
 #define CONFIG_SECTOR_FLASH 0x3FA
 #define CONFIG_SSID_LEN 32
+#define CONFIG_BSSID_LEN 16
 #define CONFIG_THRESHLOD_LT 1
 #define CONFIG_THRESHLOD_GT 2
 #define CONFIG_SSID_PASSWORD_LEN 64
 #define CONFIG_NOTIFICATION_SUBJECT_LEN 64
-#define CONFIG_NOTIFICATION_MESSAGE_LEN 2048
-#define CONFIG_NOTIFICATION_EMAIL_LEN 254
+#define CONFIG_NOTIFICATION_MESSAGE_LEN 512
+#define CONFIG_NOTIFICATION_EMAIL_LEN 64
 #define FMT_CONFIG_DEFAULT_PLANT_NAME "Thirst-%X%X%X"
 #define PERMUTATION_PEARSON_SIZE 256
 
@@ -72,19 +73,20 @@ typedef struct {
         uint8_t config_hash_pearson;
 
         // Plant configuration.
-        char the_plant_name[CONFIG_SSID_LEN];
-        char the_plant_configuration_password[CONFIG_SSID_PASSWORD_LEN];
-        char the_plant_wifi_ap[CONFIG_SSID_LEN];
-        char the_plant_wifi_ap_password[CONFIG_SSID_PASSWORD_LEN];
+        char the_plant_name[CONFIG_SSID_LEN + 1];
+        char the_plant_configuration_password[CONFIG_SSID_PASSWORD_LEN + 1];
+        char the_plant_wifi_ap[CONFIG_SSID_LEN + 1];
+        char the_plant_wifi_ap_bssid[CONFIG_BSSID_LEN];
+        char the_plant_wifi_ap_password[CONFIG_SSID_PASSWORD_LEN + 1];
         uint8_t the_plant_threshold_percent;
         uint8_t the_plant_threshold_lt_gt;
         uint32_t registered_value;
         uint32_t the_plant_check_frequency;
 
         // Notification configuration.
-        char notification_email[CONFIG_NOTIFICATION_EMAIL_LEN];
-        char notification_email_subject[CONFIG_NOTIFICATION_SUBJECT_LEN];
-        char notification_email_message[CONFIG_NOTIFICATION_MESSAGE_LEN];
+        char notification_email[CONFIG_NOTIFICATION_EMAIL_LEN + 1];
+        char notification_email_subject[CONFIG_NOTIFICATION_SUBJECT_LEN + 1];
+        char notification_email_message[CONFIG_NOTIFICATION_MESSAGE_LEN + 1];
 } config_t;
 
 struct ap_list_element_s {
@@ -127,6 +129,8 @@ static const uint8_t permutation_pearson[PERMUTATION_PEARSON_SIZE] = {
 
 esp_tcp sock_tcp;
 struct espconn sock;
+
+uint32_t data_rtc;
 
 /*
  * Flash R/W works from RAM. So instead of normal global variable for current
@@ -231,6 +235,9 @@ do_led_blue_turn_on(void);
 
 void ICACHE_FLASH_ATTR
 do_led_blue_turn_off(void);
+
+void ICACHE_FLASH_ATTR
+do_set_deep_sleep_mode(void);
 
 void ICACHE_FLASH_ATTR
 do_read_counter_value_from_rtc_mem(void);

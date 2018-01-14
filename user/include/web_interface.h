@@ -29,6 +29,7 @@ static const char *fmt_get_settings_data = \
 \"the_plant_name\":\"%s\", \
 \"the_plant_configuration_password\":\"%s\", \
 \"the_plant_wifi_ap\":\"%s\", \
+\"the_plant_wifi_ap_bssid\":\"%s\", \
 \"the_plant_wifi_ap_password\":\"%s\", \
 \"the_plant_threshold_percent\":%d, \
 \"the_plant_threshold_lt_gt\":%d, \
