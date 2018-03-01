@@ -82,10 +82,15 @@ On the root directory of the extracted SDK archive clone this repository and
     git clone https://github.com/iia/thirst.git
     git clone https://github.com/Spritetm/libesphttpd.git
 
-Patch and compile libesphttpd. From the root directory of the extracted SDK,
+Patch libesphttpd,
 
     patch -b -N -d ./libesphttpd/ -p1 < ./thirst/patch/libesphttpd-Makefile.patch
-    make -C libesphttpd/ XTENSA_TOOLS_ROOT=<TC_BIN_DIR> \
+
+To compile libesphttpd execute the following from the root directory of
+the extracted SDK,
+
+    make -C libesphttpd/ \
+    XTENSA_TOOLS_ROOT=<TC_BIN_DIR> \
     TOOLPREFIX=xtensa-lx106-elf- \
     USE_OPENSDK=yes \
     SDK_BASE=../ \
