@@ -70,7 +70,7 @@ Debian or Debian based system with the following command,
     sudo apt install yui-compressor python-serial python-pip python-setuptools -y
 
 Before compiling the firmware make sure you have a working compiler toolchain
-for ESP8266.
+for ESP8266. Check [here](https://github.com/pfalcon/esp-open-sdk).
 
 First download the latest released Espressif Non-OS SDK for ESP8266
 from [here](https://github.com/espressif/ESP8266_NONOS_SDK/releases) and extract
