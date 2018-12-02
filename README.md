@@ -72,8 +72,8 @@ Debian or Debian based system with the following command,
 Before compiling the firmware make sure you have a working compiler toolchain
 for ESP8266. Check [here](https://github.com/pfalcon/esp-open-sdk).
 
-First download the latest released Espressif Non-OS SDK for ESP8266
-from [here](https://github.com/espressif/ESP8266_NONOS_SDK/releases) and extract
+First download the  Espressif Non-OS SDK v2.1.0 for ESP8266
+from [here](https://github.com/espressif/ESP8266_NONOS_SDK/archive/v2.1.0.tar.gz) and extract
 the archive.
 
 On the root directory of the extracted SDK archive clone this repository and
