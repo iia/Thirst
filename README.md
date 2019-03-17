@@ -88,6 +88,10 @@ There are three scripts for managing building and flashing:
 This script is used to simply build the firmware. After this script has finished executing successfully the
 firmware binaries will be generated in the *src/bin* directory.
 
+```console
+foo@bar:~/thirst$ ./thirst-build.sh
+```
+
 ### thirst-build-flash.sh
 
 This script is pretty much the same as the *thirst-build.sh* script except that this script will also take care
