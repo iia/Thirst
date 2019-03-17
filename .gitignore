@@ -2,8 +2,6 @@
 .output/
 bin/
 build/
-libesphttpd/
-esp-open-sdk/
 
 # Object files
 *.o
