@@ -14,9 +14,9 @@ check the soil moisture once every day and notify the user if needed.
 
 The hardware is based on,
 
- * [Seeed Studio Wio Node](https://www.seeedstudio.com/Wio-Node-p-2637.html)
- * [Grove Moisture Sensor](https://www.seeedstudio.com/Grove---Moisture-Sensor-p-955.html)
- * LiPo battery with JST connector
+ * [Seeed Studio Wio Node](https://www.seeedstudio.com/Wio-Node-p-2637.html).
+ * [Grove Moisture Sensor](https://www.seeedstudio.com/Grove---Moisture-Sensor-p-955.html).
+ * LiPo battery with JST connector/Powerbank etc.
 
 The moisture sensor must be connected to PORT1 of the Wio Node.
 
@@ -68,9 +68,9 @@ The following table describes the functionalities of the buttons.
 
 The firmware has the following dependencies:
 
- * [ESP8266 Non-OS SDK v2.1.0](https://github.com/espressif/ESP8266_NONOS_SDK/)
- * [libesphttpd](https://github.com/Spritetm/libesphttpd) (commit: b7bb4a625bf4a2c7e7eb699caa244ca7989fd079)
- * [heatshrink v0.4.1](https://github.com/atomicobject/heatshrink)
+ * [ESP8266 Non-OS SDK v2.1.0](https://github.com/espressif/ESP8266_NONOS_SDK/).
+ * [libesphttpd](https://github.com/Spritetm/libesphttpd) (commit: b7bb4a625bf4a2c7e7eb699caa244ca7989fd079).
+ * [heatshrink v0.4.1](https://github.com/atomicobject/heatshrink).
 
 Firmware building and flashing is managed by a Docker image. The image is pulled and used automatically by
 the build and flash scripts. These scripts require a working Docker installation.
