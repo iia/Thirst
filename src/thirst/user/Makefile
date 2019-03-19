@@ -42,4 +42,5 @@ INCLUDES += -I ./
 INCLUDES += -I ../../include/ets
 INCLUDES += -I ../../libesphttpd/include
 PDIR := ../$(PDIR)
-sinclude $(PDIR)Makefile
+include $(PDIR)Makefile
+

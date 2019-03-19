@@ -476,3 +476,4 @@ cgi_save_settings(HttpdConnData *connection_data) {
 
 	return HTTPD_CGI_DONE;
 }
+
