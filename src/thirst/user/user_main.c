@@ -17,8 +17,9 @@ bool state_error_led_state = true;
 uint32_t do_notification_current = 0;
 
 /*
- * Already prepared default configuration so that it can simply copied to current
- * configuration when required.
+ * Already prepared default configuration so that
+ * it can simply copied to current configuration
+ * when required.
  */
 config_t config_default = {
 	.config_hash_pearson = 0,
@@ -198,31 +199,40 @@ cb_sock_recv(void *arg, char *data, unsigned short length) {
 	if (do_notification_next != 0) {
 		do_notification_next = 0;
 
-		os_sprintf(buffer_low_battery_subject,
-		           FMT_LOW_BATTERY_SUBJECT,
-		           config_current->the_plant_name);
+		os_sprintf(
+			buffer_low_battery_subject,
+			FMT_LOW_BATTERY_SUBJECT,
+			config_current->the_plant_name
+		);
 
-		os_sprintf(buffer_low_battery_message,
-		           FMT_LOW_BATTERY_MESSAGE,
-		           config_current->the_plant_name);
+		os_sprintf(
+			buffer_low_battery_message,
+			FMT_LOW_BATTERY_MESSAGE,
+			config_current->the_plant_name
+		);
 
-		os_sprintf(buffer_json_data,
-		           FMT_NOTIFIER_DATA_HTTP_JSON,
-		           config_current->notification_email,
-		           buffer_low_battery_subject,
-		           buffer_low_battery_message);
+		os_sprintf(
+			buffer_json_data,
+			FMT_NOTIFIER_DATA_HTTP_JSON,
+			config_current->notification_email,
+			buffer_low_battery_subject,
+			config_current->the_plant_name,
+			buffer_low_battery_message
+		);
 
-		os_sprintf(buffer_message,
-		           FMT_NOTIFIER_HTTP_HEADER,
-		           os_strlen(buffer_json_data),
-		           buffer_json_data);
+		os_sprintf(
+			buffer_message,
+			FMT_NOTIFIER_HTTP_HEADER,
+			os_strlen(buffer_json_data),
+			buffer_json_data
+		);
 
 		#if (ENABLE_DEBUG == 1)
 			os_printf("\n[+] DBG: Sending request, message = %s\n", buffer_message);
 		#endif
 
 		// Send request.
-		if(espconn_send(sock, buffer_message, os_strlen(buffer_message))) {
+		if(espconn_secure_send(sock, buffer_message, os_strlen(buffer_message))) {
 			#if (ENABLE_DEBUG == 1)
 				os_printf("\n[+] DBG: Sending data using socket failed\n");
 			#endif
@@ -285,23 +295,28 @@ cb_sock_connect(void *arg) {
 	espconn_regist_disconcb(sock, cb_sock_disconnect);
 
 	if (do_notification_current == DO_NOTIFICATION_THIRST) {
-		os_sprintf(buffer_json_data,
-		           FMT_NOTIFIER_DATA_HTTP_JSON,
-		           config_current->notification_email,
-		           config_current->notification_email_subject,
-		           config_current->notification_email_message);
+		os_sprintf(
+			buffer_json_data,
+			FMT_NOTIFIER_DATA_HTTP_JSON,
+			config_current->notification_email,
+			config_current->notification_email_subject,
+			config_current->the_plant_name,
+			config_current->notification_email_message
+		);
 
-		os_sprintf(buffer_message,
-		           FMT_NOTIFIER_HTTP_HEADER,
-		           os_strlen(buffer_json_data),
-		           buffer_json_data);
+		os_sprintf(
+			buffer_message,
+			FMT_NOTIFIER_HTTP_HEADER,
+			os_strlen(buffer_json_data),
+			buffer_json_data
+		);
 
 		#if (ENABLE_DEBUG == 1)
 			os_printf("\n[+] DBG: Sending request, message = %s\n", buffer_message);
 		#endif
 
 		// Send request.
-		if(espconn_send(sock, buffer_message, os_strlen(buffer_message))) {
+		if(espconn_secure_send(sock, buffer_message, os_strlen(buffer_message))) {
 			#if (ENABLE_DEBUG == 1)
 				os_printf("\n[+] DBG: Sending data using socket failed\n");
 			#endif
@@ -310,31 +325,40 @@ cb_sock_connect(void *arg) {
 		}
 	}
 	else if (do_notification_current == DO_NOTIFICATION_LOW_BATTERY) {
-		os_sprintf(buffer_low_battery_subject,
-		           FMT_LOW_BATTERY_SUBJECT,
-		           config_current->the_plant_name);
+		os_sprintf(
+			buffer_low_battery_subject,
+			FMT_LOW_BATTERY_SUBJECT,
+			config_current->the_plant_name
+		);
 
-		os_sprintf(buffer_low_battery_message,
-		           FMT_LOW_BATTERY_MESSAGE,
-		           config_current->the_plant_name);
+		os_sprintf(
+			buffer_low_battery_message,
+			FMT_LOW_BATTERY_MESSAGE,
+			config_current->the_plant_name
+		);
 
-		os_sprintf(buffer_json_data,
-		           FMT_NOTIFIER_DATA_HTTP_JSON,
-		           config_current->notification_email,
-		           buffer_low_battery_subject,
-		           buffer_low_battery_message);
+		os_sprintf(
+			buffer_json_data,
+			FMT_NOTIFIER_DATA_HTTP_JSON,
+			config_current->notification_email,
+			buffer_low_battery_subject,
+			config_current->the_plant_name,
+			buffer_low_battery_message
+		);
 
-		os_sprintf(buffer_message,
-		           FMT_NOTIFIER_HTTP_HEADER,
-		           os_strlen(buffer_json_data),
-		           buffer_json_data);
+		os_sprintf(
+			buffer_message,
+			FMT_NOTIFIER_HTTP_HEADER,
+			os_strlen(buffer_json_data),
+			buffer_json_data
+		);
 
 		#if (ENABLE_DEBUG == 1)
 			os_printf("\n[+] DBG: Sending request, message = %s\n", buffer_message);
 		#endif
 
 		// Send request.
-		if(espconn_send(sock, buffer_message, os_strlen(buffer_message))) {
+		if(espconn_secure_send(sock, buffer_message, os_strlen(buffer_message))) {
 			#if (ENABLE_DEBUG == 1)
 				os_printf("\n[+] DBG: Sending data using socket failed\n");
 			#endif
@@ -361,6 +385,16 @@ cb_dns_resolved(const char *hostname, ip_addr_t *ip_resolved, void *arg) {
 		ip_server[2] = *((uint8 *)&ip_resolved->addr + 2);
 		ip_server[3] = *((uint8 *)&ip_resolved->addr + 3);
 
+		#if (ENABLE_DEBUG == 1)
+			os_printf(
+				"\n[+] DBG: DNS resolved, IP = %d.%d.%d.%d\n",
+				ip_server[0],
+				ip_server[1],
+				ip_server[2],
+				ip_server[3]
+			);
+		#endif
+
 		// Configure the socket.
 		sock->proto.tcp = &sock_tcp;
 		sock->type = ESPCONN_TCP;
@@ -371,13 +405,23 @@ cb_dns_resolved(const char *hostname, ip_addr_t *ip_resolved, void *arg) {
 
 		espconn_regist_connectcb(sock, cb_sock_connect);
 
-		// Connect the socket.
-		if(espconn_connect(sock)) {
+		// Set TLS client mode and allocate memory.
+		if(!espconn_secure_set_size((uint8_t)0x01, (uint16_t)TLS_BUFFER_SIZE)) {
 			#if (ENABLE_DEBUG == 1)
-				os_printf("\n[+] DBG: Socket connect failed\n");
+				os_printf("\n[+] DBG: TLS init failed\n");
 			#endif
 
 			do_state_error();
+		}
+		else {
+			// Connect the socket.
+			if(espconn_secure_connect(sock)) {
+				#if (ENABLE_DEBUG == 1)
+					os_printf("\n[+] DBG: Socket connect failed\n");
+				#endif
+
+				do_state_error();
+			}
 		}
 	}
 	else {
@@ -986,7 +1030,7 @@ do_set_deep_sleep_mode(void) {
 			// Make sure VCC probe GPIO is on logic low.
 			do_toggle_vcc_probe(false);
 
-			if(data_rtc >= TWO_HOURS_IN_A_DAY) {
+			if(data_rtc >= HOURS_IN_A_DAY) {
 				system_deep_sleep_set_option(DEEP_SLEEP_OPTION_SAME_AS_PWRUP);
 			}
 			else {
@@ -1003,7 +1047,7 @@ do_set_deep_sleep_mode(void) {
 			do_state_error();
 		}
 	}
-	else if(data_rtc >= TWO_HOURS_IN_A_DAY) {
+	else if(data_rtc >= HOURS_IN_A_DAY) {
 		// Do RF calibration after next wakeup.
 		#if (ENABLE_DEBUG == 1)
 			os_printf("\n[+] DBG: Setting deep sleep option = DEEP_SLEEP_OPTION_SAME_AS_PWRUP\n");
@@ -1031,7 +1075,7 @@ do_read_counter_value_from_rtc_mem(void) {
 			os_printf("\n[+] DBG: RTC memory read = %d\n", data_rtc);
 		#endif
 
-		if(data_rtc < TWO_HOURS_IN_A_DAY) {
+		if(data_rtc < HOURS_IN_A_DAY) {
 			data_rtc++;
 
 			if(system_rtc_mem_write(MEM_ADDR_RTC, &data_rtc, 4)) {
@@ -1180,7 +1224,7 @@ cb_system_init_done(void) {
 	do_clear_wifi_scan_result(&ap_list_head);
 	SLIST_INIT(&ap_list_head);
 
-	// Must not be deallocated.
+	// Must not be de-allocated.
 	buffer_post_form = (char *)os_malloc(4096); // Used by web interface module.
 	config_current = (config_t *)os_malloc(sizeof(config_t));
 
@@ -1287,3 +1331,4 @@ user_init(void) {
 	// Register system initialisation done callback.
 	system_init_done_cb(cb_system_init_done);
 }
+
