@@ -16,3 +16,4 @@ docker \
     -w /home/thirst/src/ \
     iia86/env_build_thirst:v1 \
     ./thirst-flash.sh $1 $2
+

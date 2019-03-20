@@ -82,6 +82,9 @@ There are three scripts for managing building and flashing:
  * thirst-build.sh
  * thirst-build-flash.sh
  * thirst-flash.sh
+ * thirst-erase.sh
+
+:information_source: **_NOTE: Make sure that the Wio Node is in flashing mode before executing any script that communicates over the serial port. Refer [this table](#button-functions) for switching the Wio Node to flashing mode._**
 
 ### thirst-build.sh
 
@@ -116,14 +119,23 @@ the serial interface to be used for flashing and the firmware .zbin file contain
 foo@bar:~/thirst$ ./thirst-flash.sh /dev/ttyUSB0 ./thirst_v1.zbin
 ```
 
-Considering */dev/ttyUSB0* is the serial interface to be used for flashing
-and the firmware file *thirst_v1.zbin* is present in *src/thirst_v1.zbin*.
+Considering */dev/ttyUSB0* is the serial interface to be used for flashing the Wio Node and the firmware file *thirst_v1.zbin* is present in *src/thirst_v1.zbin*.
+
+### thirst-erase.sh
+
+This script can be used to erase the entire flash memory of the Wio Node. Can be useful to use before flashing the device.
+
+```console
+foo@bar:~/thirst$ ./thirst-erase.sh /dev/ttyUSB0
+```
+
+Considering */dev/ttyUSB0* is the serial interface to be used for erasing the Wio Node flash.
 
 ### Hardware Connection for Flashing
 
-To flash the Wio node the serial USART device must be connected as shown below.
+To flash the Wio Node the serial USART device must be connected as shown below.
 
-:information_source: **_NOTE: The red, green and blue markings on the image represent RX,TX and GND pins of the Wio node's PORT0_**
+:information_source: **_NOTE: The red, green and blue markings on the image represent RX,TX and GND pins of the Wio Node's PORT0_**
 
 <p align="center">
     <img align="center" src="https://github.com/iia/Thirst/blob/master/.readme-resources/hardware_flashing.png" width="350" height="450" />

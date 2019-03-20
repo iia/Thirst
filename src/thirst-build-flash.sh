@@ -26,3 +26,4 @@ esptool.py \
 make -C libesphttpd/ clean
 make -C thirst/ clean
 make clean
+

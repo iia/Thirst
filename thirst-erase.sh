@@ -15,5 +15,5 @@ docker \
     -u thirst \
     -w /home/thirst/src/ \
     iia86/env_build_thirst:v1 \
-    ./thirst-build-flash.sh $1
+    ./thirst-erase.sh $1
 
