@@ -31,7 +31,7 @@ Accept: application/json; charset=utf-8\r\n\
 Content-Type: application/json; charset=utf-8\r\n\
 Content-Length: %d\r\n\
 Cache-Control: no-cache\r\n\
-Authorization: Bearer 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\r\n\
+Authorization: <KEY>\r\n\
 \r\n\
 %s"
 
