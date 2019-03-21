@@ -1,4 +1,6 @@
-<img src="https://github.com/iia/thirst/blob/master/.readme-resources/thirst.png" width="150px">
+<p align="center">
+    <img src="https://github.com/iia/thirst/blob/master/.readme-resources/thirst.png" width="220px" style="text-align: center;">
+</p>
 
 :warning: **_WARNING: Currently the source is in a broken state as the e-mail notification mechanism is work in progress. For now only use the released versions._**
 
