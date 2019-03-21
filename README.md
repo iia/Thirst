@@ -1,5 +1,8 @@
 <p align="center">
-    <img src="https://github.com/iia/thirst/blob/master/.readme-resources/thirst.png" width="220px" style="text-align: center;">
+    <img
+        width="225px"
+        style="text-align: center;"
+        src="https://github.com/iia/thirst/blob/master/.readme-resources/thirst.png" />
 </p>
 
 :warning: **_WARNING: Currently the source is in a broken state as the e-mail notification mechanism is work in progress. For now only use the released versions._**
@@ -23,7 +26,10 @@ The hardware is based on,
 The moisture sensor must be connected to PORT1 of the Wio Node.
 
 <p align="center">
-    <img align="center" src="https://github.com/iia/Thirst/blob/master/.readme-resources/hardware.png" width="350" height="450" />
+    <img
+        width="350px"
+        height="450px"
+        src="https://github.com/iia/Thirst/blob/master/.readme-resources/hardware.png" />
 </p>
 
 ## LEDs and Buttons
@@ -140,7 +146,10 @@ To flash the Wio Node the serial USART device must be connected as shown below.
 :information_source: **_NOTE: The red, green and blue markings on the image represent RX,TX and GND pins of the Wio Node's PORT0_**
 
 <p align="center">
-    <img align="center" src="https://github.com/iia/Thirst/blob/master/.readme-resources/hardware_flashing.png" width="350" height="450" />
+    <img
+        width="350px"
+        height="450px"
+        src="https://github.com/iia/Thirst/blob/master/.readme-resources/hardware_flashing.png" />
 </p>
 
 ## Configuring the System
@@ -155,5 +164,9 @@ After connecting to this access point the configuration interface will be
 available on IP address: **192.168.7.1** which can be used with a web browser.
 
 <p align="center">
-    <img align="center" src="https://github.com/iia/Thirst/blob/master/.readme-resources/configuration_interface.png" width="" height="" />
+    <img
+        width="350px"
+        height="450px"
+        align="center"
+        src="https://github.com/iia/Thirst/blob/master/.readme-resources/configuration_interface.png" />
 </p>
