@@ -1,4 +1,4 @@
-![Thirst Banner](.readme-resources/thirst.png)
+<img src="https://github.com/iia/thirst/blob/master/.readme-resources/thirst.png" width="150px">
 
 :warning: **_WARNING: Currently the source is in a broken state as the e-mail notification mechanism is work in progress. For now only use the released versions._**
 
