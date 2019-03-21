@@ -165,8 +165,8 @@ available on IP address: **192.168.7.1** which can be used with a web browser.
 
 <p align="center">
     <img
-        width="350px"
-        height="450px"
+        width="650px"
+        height="750px"
         align="center"
         src="https://github.com/iia/Thirst/blob/master/.readme-resources/configuration_interface.png" />
 </p>
