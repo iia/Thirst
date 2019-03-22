@@ -77,12 +77,12 @@ The firmware has the following dependencies:
  * [ESP8266 Non-OS SDK v2.1.0](https://github.com/espressif/ESP8266_NONOS_SDK/).
  * [libesphttpd](https://github.com/Spritetm/libesphttpd) (commit: b7bb4a625bf4a2c7e7eb699caa244ca7989fd079).
  * [heatshrink v0.4.1](https://github.com/atomicobject/heatshrink).
- * [SendGrid API v3](https://sendgrid.com/docs/API_Reference/Web_API_v3/index.html)
+ * [SendGrid API v3](https://sendgrid.com/docs/API_Reference/Web_API_v3/index.html).
 
 ### SendGrid API v3
 
 The firmware uses [SendGrid](https://sendgrid.com/) API for sending the notification e-mails. Hence if you are
-compiling the firmware you have to provide this API key.
+compiling the firmware you have to provide the SendGrid API v3 key.
 
 :information_source: **_NOTE: The released firmware binaries are already compiled with the key._**
 
@@ -90,19 +90,19 @@ compiling the firmware you have to provide this API key.
 
 :information_source: **_NOTE: Currently building and flashing is only supported for Linux based systems._**
 
-Firmware building and flashing is managed by a Docker image. The image is pulled and used automatically by
+Firmware building and flashing are managed by a Docker image. The image is pulled and used automatically by
 the build and flash scripts. These scripts require a working Docker installation.
 
 Check [Docker documentation](https://docs.docker.com/) for how to install and setup Docker.
 
-There are three scripts for managing building and flashing:
+There are four scripts for managing building and flashing:
 
  * thirst-build.sh
  * thirst-build-flash.sh
  * thirst-flash.sh
  * thirst-erase.sh
 
-:information_source: **_NOTE: Make sure that the Wio Node is in flashing mode before executing any script that communicates over the serial port. Refer [this table](#button-functions) for switching the Wio Node to flashing mode._**
+:information_source: **_NOTE: Make sure that the Wio Node is in flashing mode before executing any script that communicates over the serial port. Refer to [this table](#button-functions) for switching the Wio Node to flashing mode._**
 
 ### thirst-build.sh
 
@@ -155,7 +155,7 @@ Considering */dev/ttyUSB0* is the serial interface to be used for erasing the Wi
 
 To flash the Wio Node the serial USART device must be connected as shown below.
 
-:information_source: **_NOTE: The red, green and blue markings on the image represent RX,TX and GND pins of the Wio Node's PORT0_**
+:information_source: **_NOTE: The RED, GREEN and BLUE markings on the image represent RX,TX and GND pins respectively of the Wio Node's PORT0_**
 
 <p align="center">
     <img
