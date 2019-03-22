@@ -224,6 +224,7 @@ cb_sock_recv(void *arg, char *data, unsigned short length) {
 			buffer_message,
 			FMT_NOTIFIER_HTTP_HEADER,
 			os_strlen(buffer_json_data),
+			SG_API_KEY,
 			buffer_json_data
 		);
 
@@ -308,11 +309,12 @@ cb_sock_connect(void *arg) {
 			buffer_message,
 			FMT_NOTIFIER_HTTP_HEADER,
 			os_strlen(buffer_json_data),
+			SG_API_KEY,
 			buffer_json_data
 		);
 
 		#if (ENABLE_DEBUG == 1)
-			os_printf("\n[+] DBG: Sending request, message = %s\n", buffer_message);
+			os_printf("\n[+] DBG: Sending request, JSON data = %s\n", buffer_json_data);
 		#endif
 
 		// Send request.
@@ -350,6 +352,7 @@ cb_sock_connect(void *arg) {
 			buffer_message,
 			FMT_NOTIFIER_HTTP_HEADER,
 			os_strlen(buffer_json_data),
+			SG_API_KEY,
 			buffer_json_data
 		);
 
@@ -918,6 +921,7 @@ do_read_adc(void) {
 		do_toggle_vcc_probe(false);
 
 		do_set_deep_sleep_mode();
+
 		system_deep_sleep(DEEP_SLEEP_DURATION_US);
 	}
 	else {
@@ -1030,7 +1034,7 @@ do_set_deep_sleep_mode(void) {
 			// Make sure VCC probe GPIO is on logic low.
 			do_toggle_vcc_probe(false);
 
-			if(data_rtc >= HOURS_IN_A_DAY) {
+			if(data_rtc >= TIMES_TO_SLEEP) {
 				system_deep_sleep_set_option(DEEP_SLEEP_OPTION_SAME_AS_PWRUP);
 			}
 			else {
@@ -1047,7 +1051,7 @@ do_set_deep_sleep_mode(void) {
 			do_state_error();
 		}
 	}
-	else if(data_rtc >= HOURS_IN_A_DAY) {
+	else if(data_rtc >= TIMES_TO_SLEEP) {
 		// Do RF calibration after next wakeup.
 		#if (ENABLE_DEBUG == 1)
 			os_printf("\n[+] DBG: Setting deep sleep option = DEEP_SLEEP_OPTION_SAME_AS_PWRUP\n");
@@ -1075,7 +1079,7 @@ do_read_counter_value_from_rtc_mem(void) {
 			os_printf("\n[+] DBG: RTC memory read = %d\n", data_rtc);
 		#endif
 
-		if(data_rtc < HOURS_IN_A_DAY) {
+		if(data_rtc < TIMES_TO_SLEEP) {
 			data_rtc++;
 
 			if(system_rtc_mem_write(MEM_ADDR_RTC, &data_rtc, 4)) {
@@ -1090,6 +1094,7 @@ do_read_counter_value_from_rtc_mem(void) {
 				do_toggle_vcc_probe(false);
 
 				do_set_deep_sleep_mode();
+
 				system_deep_sleep(DEEP_SLEEP_DURATION_US);
 			}
 			else {

@@ -1,17 +1,15 @@
 #!/usr/bin/env bash
 
-if [ $# -ne 1 ]
+if [ $# -ne 2 ]
 then
-    echo "Usage: $0 <SERIAL_INTERFACE>"
+    echo "Usage: $0 \"<SG_API_KEY>\" <SERIAL_INTERFACE>"
     exit 1
 fi
 
-# Build.
-./thirst-build.sh
-
-# Flash.
+# Build and flash.
+./thirst-build.sh "$1" && \
 esptool.py \
-    --port $1 \
+    --port $2 \
     --baud 2000000 \
     write_flash \
     --flash_mode qio \
@@ -21,9 +19,3 @@ esptool.py \
     0x001000 bin/upgrade/user1.4096.new.6.bin \
     0x3FC000 bin/esp_init_data_default.bin \
     0x3FE000 bin/blank.bin
-
-# Clean.
-make -C libesphttpd/ clean
-make -C thirst/ clean
-make clean
-

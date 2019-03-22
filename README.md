@@ -70,15 +70,25 @@ The following table describes the functionalities of the buttons.
 
     - Turned on, in configuration mode.
 
-## Building and Flashing the Firmware
-
-:information_source: **_NOTE: Currently building and flashing is only supported for Linux based systems._**
+## The Firmware
 
 The firmware has the following dependencies:
 
  * [ESP8266 Non-OS SDK v2.1.0](https://github.com/espressif/ESP8266_NONOS_SDK/).
  * [libesphttpd](https://github.com/Spritetm/libesphttpd) (commit: b7bb4a625bf4a2c7e7eb699caa244ca7989fd079).
  * [heatshrink v0.4.1](https://github.com/atomicobject/heatshrink).
+ * [SendGrid API v3](https://sendgrid.com/docs/API_Reference/Web_API_v3/index.html)
+
+### SendGrid API v3
+
+The firmware uses [SendGrid](https://sendgrid.com/) API for sending the notification e-mails. Hence if you are
+compiling the firmware you have to provide this API key.
+
+:information_source: **_NOTE: The released firmware binaries are already compiled with the key._**
+
+### Building and Flashing
+
+:information_source: **_NOTE: Currently building and flashing is only supported for Linux based systems._**
 
 Firmware building and flashing is managed by a Docker image. The image is pulled and used automatically by
 the build and flash scripts. These scripts require a working Docker installation.
@@ -97,20 +107,22 @@ There are three scripts for managing building and flashing:
 ### thirst-build.sh
 
 This script is used to simply build the firmware. After this script has finished executing successfully the
-firmware binaries will be generated in the *src/bin* directory.
+firmware binaries will be generated in the *src/bin* directory. The script takes the SendGrid API v3 key as
+the only argument.
 
 ```console
-foo@bar:~/thirst$ ./thirst-build.sh
+foo@bar:~/thirst$ ./thirst-build.sh "<SG_API_KEY>"
 ```
 
 ### thirst-build-flash.sh
 
 This script is pretty much the same as the *thirst-build.sh* script except that this script will also take care
-of flashing the built firmware. This script takes one argument that is the serial interface to be used to flash
-the Wio Node.
+of flashing the built firmware. This script takes two arguments:
+ * SendGrid API v3 key.
+ * The serial interface to be used to flash the Wio Node.
 
 ```console
-foo@bar:~/thirst$ ./thirst-build-flash.sh /dev/ttyUSB0
+foo@bar:~/thirst$ ./thirst-build-flash.sh "<SG_API_KEY>" /dev/ttyUSB0
 ```
 
 Considering */dev/ttyUSB0* is the serial interface to be used for flashing the Wio Node.
