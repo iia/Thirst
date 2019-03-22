@@ -1,3 +1,5 @@
+:warning: **_WARNING: This version is deprecated and not supported anymore. The backing mechanism for sending the notification e-mails has totally re-worked which breaks the older versions. Use the latest released firmware versions or the code from the master branch for a working system._**
+
 Thirst
 ======
 
