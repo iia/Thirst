@@ -1,6 +1,6 @@
 <p align="center">
     <img
-        width="350px"
+        width="225px"
         style="text-align: center;"
         src="https://github.com/iia/thirst/blob/master/.readme-resources/thirst.png" />
 </p>
