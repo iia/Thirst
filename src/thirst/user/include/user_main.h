@@ -93,7 +93,7 @@ Authorization: Bearer %s\r\n\
 #define DEEP_SLEEP_OPTION_NO_RF_CAL     2
 #define DEEP_SLEEP_OPTION_NO_RADIO      4
 
-#define LOW_BATTERY_THRESHOLD           350
+#define LOW_BATTERY_THRESHOLD           450
 
 #define DO_NOTIFICATION_THIRST          1
 #define DO_NOTIFICATION_LOW_BATTERY     2
