@@ -9,6 +9,7 @@
 #include "user_interface.h"
 
 // Initialize global variables.
+bool is_error = false;
 uint32_t data_rtc = 0;
 ap_list_head_t ap_list_head;
 uint32_t do_notification_next = 0;
@@ -77,40 +78,8 @@ user_rf_cal_sector_set(void)
 
 void ICACHE_FLASH_ATTR
 do_notification(void) {
-	struct station_config config_st_interface;
-
-	// Clear out WiFi station interface configuration storage.
-	os_bzero(&config_st_interface, sizeof(config_st_interface));
-
 	// Enable station mode.
 	wifi_set_opmode_current(STATION_MODE);
-
-	// WiFi station settings.
-	config_st_interface.bssid_set = 0;
-	os_memcpy(&config_st_interface.ssid, config_current->the_plant_wifi_ap,
-	os_strlen(config_current->the_plant_wifi_ap));
-	os_memcpy(&config_st_interface.password, config_current->the_plant_wifi_ap_password,
-	os_strlen(config_current->the_plant_wifi_ap_password));
-
-	// Apply WiFi settings.
-	wifi_station_set_config_current(&config_st_interface);
-
-	// Set callback for WiFi events.
-	wifi_set_event_handler_cb(cb_wifi_event);
-
-	// Enable station mode reconnect.
-	wifi_station_set_reconnect_policy(true);
-
-	// Connect WiFi in station mode.
-	if(!wifi_station_connect()) {
-		#if (ENABLE_DEBUG == 1)
-			os_printf("\n[+] DBG: WiFi station mode connect failed\n");
-		#endif
-
-		do_state_error();
-
-		return;
-	}
 }
 
 void ICACHE_FLASH_ATTR
@@ -141,9 +110,13 @@ is_battery_low(uint32_t adc_sample_size) {
 
 	os_delay_us(128);
 
-	for(i = 0; i < adc_sample_size; i++) {
-		adc_samples[i] = system_adc_read();
-	}
+	// Disable interrupts.
+	ets_intr_lock();
+
+	system_adc_read_fast(adc_samples, (uint16_t)adc_sample_size, 8);
+
+	// Enable interrupts.
+	ets_intr_unlock();
 
 	do_toggle_vcc_probe(false);
 
@@ -168,6 +141,22 @@ is_battery_low(uint32_t adc_sample_size) {
 	else {
 		return false;
 	}
+}
+
+void
+cb_timer_recv(void) {
+	os_timer_disarm(&timer_generic_software);
+
+	#if (ENABLE_DEBUG == 1)
+		os_printf("\n[+] DBG: cb_recv_timeout()\n");
+	#endif
+
+	do_state_error();
+
+	// Setup timer to call disconnect on the socket.
+	os_timer_setfn(&timer_generic_software,
+					(os_timer_func_t *)cb_timer_disconnect_sock, NULL);
+	os_timer_arm(&timer_generic_software, 2000, false);
 }
 
 void
@@ -241,6 +230,20 @@ cb_sock_recv(void *arg, char *data, unsigned short length) {
 			os_free(buffer_message);
 
 			do_state_error();
+
+			// Setup timer to call disconnect on the socket.
+			os_timer_setfn(&timer_generic_software,
+						(os_timer_func_t *)cb_timer_disconnect_sock, NULL);
+			os_timer_arm(&timer_generic_software, 2000, false);
+		}
+		else {
+			// Setup timer to handle recv failed callback.
+			os_timer_setfn(
+				&timer_generic_software,
+				(os_timer_func_t *)cb_timer_recv,
+				NULL
+			);
+			os_timer_arm(&timer_generic_software, 60000, false);
 		}
 	}
 	else {
@@ -258,6 +261,10 @@ cb_sock_disconnect(void *arg) {
 	#if (ENABLE_DEBUG == 1)
 		os_printf("\n[+] DBG: cb_sock_disconnect()\n");
 	#endif
+
+	if(is_error) {
+		return;
+	}
 
 	do_set_deep_sleep_mode();
 
@@ -324,6 +331,20 @@ cb_sock_connect(void *arg) {
 			#endif
 
 			do_state_error();
+
+			// Setup timer to call disconnect on the socket.
+			os_timer_setfn(&timer_generic_software,
+						(os_timer_func_t *)cb_timer_disconnect_sock, NULL);
+			os_timer_arm(&timer_generic_software, 2000, false);
+		}
+		else {
+			// Setup timer to handle recv timeout.
+			os_timer_setfn(
+				&timer_generic_software,
+				(os_timer_func_t *)cb_timer_recv,
+				NULL
+			);
+			os_timer_arm(&timer_generic_software, 60000, false);
 		}
 	}
 	else if (do_notification_current == DO_NOTIFICATION_LOW_BATTERY) {
@@ -367,6 +388,20 @@ cb_sock_connect(void *arg) {
 			#endif
 
 			do_state_error();
+
+			// Setup timer to call disconnect on the socket.
+			os_timer_setfn(&timer_generic_software,
+						(os_timer_func_t *)cb_timer_disconnect_sock, NULL);
+			os_timer_arm(&timer_generic_software, 2000, false);
+		}
+		else {
+			// Setup timer to handle recv failed callback.
+			os_timer_setfn(
+				&timer_generic_software,
+				(os_timer_func_t *)cb_timer_recv,
+				NULL
+			);
+			os_timer_arm(&timer_generic_software, 60000, false);
 		}
 	}
 
@@ -572,6 +607,14 @@ cb_wifi_scan_done(void *bss_info_list, STATUS status) {
 void ICACHE_FLASH_ATTR
 cb_wifi_event(System_Event_t *evt) {
 	err_t e;
+	uint32_t i = 0;
+	struct ip_info ip;
+	uint8_t config_hash = 0;
+	bool config_none = false;
+	uint32_t gpio_i_config_mode_value = 1;
+	struct softap_config config_ap_interface;
+	struct station_config config_st_interface;
+	ap_list_element_t *ap_list_element = NULL;
 
 	#if (ENABLE_DEBUG == 1)
 		os_printf("\n[+] DBG: cb_wifi_event()\n");
@@ -659,6 +702,191 @@ cb_wifi_event(System_Event_t *evt) {
 		#if (ENABLE_DEBUG == 1)
 			os_printf("\n[+] DBG: WiFi operating mode changed\n");
 		#endif
+
+		if (wifi_get_opmode() == NULL_MODE) {
+			#if (ENABLE_DEBUG == 1)
+				os_printf("\n[+] DBG: WiFi null mode\n");
+			#endif
+
+			if(is_error) {
+				return;
+			}
+
+			// Make sure the sensor is powered off.
+			do_toggle_sesnor(false);
+
+			// Make sure VCC probe GPIO is on logic low.
+			do_toggle_vcc_probe(false);
+
+			// Clear WiFi scan result and initialize WiFi scan list.
+			do_clear_wifi_scan_result(&ap_list_head);
+			SLIST_INIT(&ap_list_head);
+
+			// Must not be de-allocated.
+			buffer_post_form = (char *)os_malloc(4096); // Used by web interface module.
+			config_current = (config_t *)os_malloc(sizeof(config_t));
+
+			if(!do_configuration_read()) {
+				return;
+			}
+
+			#if (ENABLE_DEBUG == 1)
+				os_printf("\n[+] DBG: Configuration reading successful\n");
+				os_printf("\n[+] DBG: Waiting for configuration mode pin state change\n");
+			#endif
+
+			// Configure configuration mode selector GPIO pin as input.
+			PIN_FUNC_SELECT(GPIO_I_CONFIG_MODE, GPIO_I_FUNC_CONFIG_MODE);
+			gpio_output_set(0, 0, 0, GPIO_I_BIT_CONFIG_MODE);
+			PIN_PULLUP_EN(GPIO_I_CONFIG_MODE);
+
+			// Wait for 2 seconds.
+			for(i = 0; i < 15; i++) {
+				/*
+				* In firmware version v1 the argument of os_delay_us() was of
+				* type uint32_t. From firmware version v2 it is uint16_t. So to
+				* achieve a delay of 2 seconds (1000000us) here, we iterate the
+				* delay with the highest possible value for uint16_t type.
+				*/
+				os_delay_us(65535);
+			}
+
+			/*
+			* Check whether to switch to configuration mode or not.
+			* If grounded then 0 (configuration mode button is pressed) otherwise 1.
+			*/
+			gpio_i_config_mode_value = GPIO_INPUT_GET(0);
+
+			// Generate pearson hash for the configuration that is read from the flash.
+			config_hash = do_get_hash_pearson((uint8_t *)config_current);
+
+			#if (ENABLE_DEBUG == 1)
+				os_printf("\n[+] DBG: Pearson hash of the read configuration = 0x%x\n", config_hash);
+			#endif
+
+			if(config_hash != config_current->config_hash_pearson) {
+				#if (ENABLE_DEBUG == 1)
+					os_printf("\n[+] DBG: Configuration hash mismatch, calcualted = 0x%x, found = 0x%x\n",
+					config_hash,
+					config_current->config_hash_pearson);
+				#endif
+
+				config_none = true;
+
+				/*
+				* Since no valid configuration was found on the flash the current
+				* configuration will be initialised with default values.
+				*
+				* This default configuration in only applicable to be used in the
+				* configuration mode. Normal operation can not continue with this
+				* configuration.
+				*/
+
+				// Set the deflault plant name on default configuration.
+				do_get_default_plant_name(config_default.the_plant_name,
+										sizeof(config_default.the_plant_name));
+
+				// Set default configuration hash.
+				config_default.config_hash_pearson = do_get_hash_pearson((uint8_t *)&config_default);
+
+				// Set default configuration as the current configuration.
+				os_bzero(config_current, sizeof(config_t));
+				os_memcpy(config_current, &config_default, sizeof(config_default));
+			}
+
+			if (gpio_i_config_mode_value == 0) {
+				do_config_mode();
+			}
+			else {
+				if(config_none) {
+					do_config_mode();
+
+					return;
+				}
+
+				do_read_counter_value_from_rtc_mem();
+			}
+
+		}
+		else if(wifi_get_opmode() == STATION_MODE) {
+			// Connect to AP in station mode.
+			#if (ENABLE_DEBUG == 1)
+				os_printf("\n[+] DBG: WiFi STATION mode\n");
+			#endif
+
+			// Clear out WiFi station interface configuration storage.
+			os_bzero(&config_st_interface, sizeof(config_st_interface));
+
+			// WiFi station settings.
+			config_st_interface.bssid_set = 0;
+			os_memcpy(&config_st_interface.ssid, config_current->the_plant_wifi_ap,
+			os_strlen(config_current->the_plant_wifi_ap));
+			os_memcpy(&config_st_interface.password, config_current->the_plant_wifi_ap_password,
+			os_strlen(config_current->the_plant_wifi_ap_password));
+
+			// Apply WiFi settings.
+			wifi_station_set_config_current(&config_st_interface);
+
+			// Enable station mode reconnect.
+			wifi_station_set_reconnect_policy(true);
+
+			if(!wifi_station_connect()) {
+				#if (ENABLE_DEBUG == 1)
+					os_printf("\n[+] DBG: WiFi station mode connect failed\n");
+				#endif
+
+				do_state_error();
+			}
+		}
+		else if (wifi_get_opmode() == STATIONAP_MODE) {
+			// Configuration mode.
+			#if (ENABLE_DEBUG == 1)
+				os_printf("\n[+] DBG: WiFi SOFTAP mode\n");
+			#endif
+
+			// Clear out configuration storage.
+			os_bzero(&ip, sizeof(ip));
+			os_bzero(&config_ap_interface, sizeof(config_ap_interface));
+
+			wifi_softap_dhcps_stop();
+
+			// Set AP mode configuration parameters.
+			IP4_ADDR(&ip.ip, 192, 168, 7, 1);
+			IP4_ADDR(&ip.gw, 192, 168, 7, 1);
+			IP4_ADDR(&ip.netmask, 255, 255, 255, 0);
+			wifi_set_ip_info(SOFTAP_IF, &ip);
+
+			config_ap_interface.channel = 7;
+			config_ap_interface.max_connection = 4;
+			config_ap_interface.beacon_interval = 50;
+			config_ap_interface.authmode = AUTH_WPA_WPA2_PSK;
+
+			os_memcpy(config_ap_interface.ssid,
+				config_current->the_plant_name,
+				os_strlen(config_current->the_plant_name));
+			os_memcpy(config_ap_interface.password,
+				config_current->the_plant_configuration_password,
+				os_strlen(config_current->the_plant_configuration_password));
+
+			wifi_softap_dhcps_start();
+
+			// Apply AP configuration.
+			wifi_softap_set_config_current(&config_ap_interface);
+
+			// Initialise ESPHTTPD web pages.
+			if(espFsInit((void*)(&webpages_espfs_start)) != ESPFS_INIT_RESULT_OK) {
+				#if (ENABLE_DEBUG == 1)
+					os_printf("\n[+] DBG: ESPFS initialisation for HTTPD failed\n");
+				#endif
+
+				do_state_error();
+
+				return;
+			}
+
+			// Start ESPHTTPD.
+			httpdInit(httpd_urls, 80);
+		}
 	}
 	else {
 		#if (ENABLE_DEBUG == 1)
@@ -678,9 +906,13 @@ do_get_sensor_reading(uint32_t adc_sample_size) {
 
 	os_delay_us(128);
 
-	for(i = 0; i < adc_sample_size; i++) {
-		adc_samples[i] = system_adc_read();
-	}
+	// Disable interrupts.
+	ets_intr_lock();
+
+	system_adc_read_fast(adc_samples, (uint16_t)adc_sample_size, 8);
+
+	// Enable interrupts.
+	ets_intr_unlock();
 
 	do_toggle_sesnor(false);
 
@@ -972,6 +1204,8 @@ do_state_error(void) {
 		os_printf("\n[+] DBG: In error state\n");
 	#endif
 
+	is_error = true;
+
 	// Turn off WiFi.
 	wifi_set_opmode_current(NULL_MODE);
 
@@ -1141,178 +1375,27 @@ do_read_counter_value_from_rtc_mem(void) {
 
 void ICACHE_FLASH_ATTR
 do_config_mode(void) {
-	struct ip_info ip;
-	struct softap_config config_ap_interface;
-
-	// Configuration mode.
-	#if (ENABLE_DEBUG == 1)
-		os_printf("\n[+] DBG: In configuration mode\n");
-	#endif
-
-	// Clear out configuration storage.
-	os_bzero(&ip, sizeof(ip));
-	os_bzero(&config_ap_interface, sizeof(config_ap_interface));
-
-	// Enable Station + AP mode.
+	/*
+	Enable STATION + AP mode.
+	We need the station mode to scan for available WiFi networks.
+	*/
 	wifi_set_opmode_current(STATIONAP_MODE);
-	wifi_softap_dhcps_stop();
-
-	// Set AP mode configuration parameters.
-	IP4_ADDR(&ip.ip, 192, 168, 7, 1);
-	IP4_ADDR(&ip.gw, 192, 168, 7, 1);
-	IP4_ADDR(&ip.netmask, 255, 255, 255, 0);
-	wifi_set_ip_info(SOFTAP_IF, &ip);
-
-	config_ap_interface.channel = 7;
-	config_ap_interface.max_connection = 4;
-	config_ap_interface.beacon_interval = 50;
-	config_ap_interface.authmode = AUTH_WPA_WPA2_PSK;
-
-	os_memcpy(config_ap_interface.ssid,
-		  config_current->the_plant_name,
-		  os_strlen(config_current->the_plant_name));
-	os_memcpy(config_ap_interface.password,
-		  config_current->the_plant_configuration_password,
-		  os_strlen(config_current->the_plant_configuration_password));
-
-	wifi_softap_dhcps_start();
-
-	// Apply AP configuration.
-	wifi_softap_set_config_current(&config_ap_interface);
-
-	// Initialise ESPHTTPD web pages.
-	if(espFsInit((void*)(&webpages_espfs_start)) != ESPFS_INIT_RESULT_OK) {
-		#if (ENABLE_DEBUG == 1)
-			os_printf("\n[+] DBG: ESPFS initialisation for HTTPD failed\n");
-		#endif
-
-		do_state_error();
-
-		return;
-	}
-
-	// Start ESPHTTPD.
-	httpdInit(httpd_urls, 80);
 
 	do_state_config();
 }
 
 void ICACHE_FLASH_ATTR
 cb_system_init_done(void) {
-	uint32_t i = 0;
-	struct ip_info ip;
-	uint8_t config_hash = 0;
-	bool config_none = false;
-	uint32_t gpio_i_config_mode_value = 1;
-	struct softap_config config_ap_interface;
-	ap_list_element_t *ap_list_element = NULL;
-
 	#if (ENABLE_DEBUG == 1)
 		os_printf("\n[+] DBG: cb_system_init_done()\n");
 		os_printf("\n[+] DBG: SDK version = %s\n", system_get_sdk_version());
 	#endif
 
-	/*
-	 * We enable Station + AP mode instead of NULL mode here because we must
-	 * be ready to handle AP mode anytime.
-	 */
-	wifi_set_opmode_current(STATIONAP_MODE);
-	system_deep_sleep_set_option(DEEP_SLEEP_OPTION_SAME_AS_PWRUP);
+	// Set callback for WiFi events.
+	wifi_set_event_handler_cb(cb_wifi_event);
 
-	// Make sure the sensor is powered off.
-	do_toggle_sesnor(false);
-
-	// Make sure VCC probe GPIO is on logic low.
-	do_toggle_vcc_probe(false);
-
-	// Clear WiFi scan result and initialize WiFi scan list.
-	do_clear_wifi_scan_result(&ap_list_head);
-	SLIST_INIT(&ap_list_head);
-
-	// Must not be de-allocated.
-	buffer_post_form = (char *)os_malloc(4096); // Used by web interface module.
-	config_current = (config_t *)os_malloc(sizeof(config_t));
-
-	if(!do_configuration_read()) {
-		return;
-	}
-
-	#if (ENABLE_DEBUG == 1)
-		os_printf("\n[+] DBG: Configuration reading successful\n");
-		os_printf("\n[+] DBG: Waiting for configuration mode pin state change\n");
-	#endif
-
-	// Configure configuration mode selector GPIO pin as input.
-	PIN_FUNC_SELECT(GPIO_I_CONFIG_MODE, GPIO_I_FUNC_CONFIG_MODE);
-	gpio_output_set(0, 0, 0, GPIO_I_BIT_CONFIG_MODE);
-	PIN_PULLUP_EN(GPIO_I_CONFIG_MODE);
-
-	// Wait for 2 seconds.
-	for(i = 0; i < 15; i++) {
-		/*
-		 * In firmware version v1 the argument of os_delay_us() was of
-		 * type uint32_t. From firmware version v2 it is uint16_t. So to
-		 * achieve a delay of 2 seconds (1000000us) here, we iterate the
-		 * delay with the highest possible value for uint16_t type.
-		 */
-		os_delay_us(65535);
-	}
-
-	/*
-	 * Check whether to switch to configuration mode or not.
-	 * If grounded then 0 (configuration mode button is pressed) otherwise 1.
-	 */
-	gpio_i_config_mode_value = GPIO_INPUT_GET(0);
-
-	// Generate pearson hash for the configuration that is read from the flash.
-	config_hash = do_get_hash_pearson((uint8_t *)config_current);
-
-	#if (ENABLE_DEBUG == 1)
-		os_printf("\n[+] DBG: Pearson hash of the read configuration = 0x%x\n", config_hash);
-	#endif
-
-	if(config_hash != config_current->config_hash_pearson) {
-		#if (ENABLE_DEBUG == 1)
-			os_printf("\n[+] DBG: Configuration hash mismatch, calcualted = 0x%x, found = 0x%x\n",
-			config_hash,
-			config_current->config_hash_pearson);
-		#endif
-
-		config_none = true;
-
-		/*
-		 * Since no valid configuration was found on the flash the current
-		 * configuration will be initialised with default values.
-		 *
-		 * This default configuration in only applicable to be used in the
-		 * configuration mode. Normal operation can not continue with this
-		 * configuration.
-		 */
-
-		// Set the deflault plant name on default configuration.
-		do_get_default_plant_name(config_default.the_plant_name,
-		                          sizeof(config_default.the_plant_name));
-
-		// Set default configuration hash.
-		config_default.config_hash_pearson = do_get_hash_pearson((uint8_t *)&config_default);
-
-		// Set default configuration as the current configuration.
-		os_bzero(config_current, sizeof(config_t));
-		os_memcpy(config_current, &config_default, sizeof(config_default));
-	}
-
-	if (gpio_i_config_mode_value == 0) {
-		do_config_mode();
-	}
-	else {
-		if(config_none) {
-			do_config_mode();
-
-			return;
-		}
-
-		do_read_counter_value_from_rtc_mem();
-	}
+	// Start with WiFi radio off.
+	wifi_set_opmode_current(NULL_MODE);
 }
 
 void ICACHE_FLASH_ATTR

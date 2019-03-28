@@ -192,6 +192,9 @@ bool ICACHE_FLASH_ATTR
 is_battery_low(uint32_t adc_sample_size);
 
 void
+cb_timer_recv(void);
+
+void
 cb_timer_disconnect_sock(void);
 
 void ICACHE_FLASH_ATTR
