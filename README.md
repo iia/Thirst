@@ -5,12 +5,10 @@
         src="https://github.com/iia/thirst/blob/master/.readme-resources/thirst.png" />
 </p>
 
-:warning: **_WARNING: Currently the source is in a broken state as the e-mail notification mechanism is work in progress. Please wait for the upcoming v3 release!_**
-
 # Thirst
 
 Thirst is a system that can monitor soil moisture and send notifications via
-e-mail in case the moisture is above or below a pre-configured threshold. The
+E-mail in case the moisture is above or below a pre-configured threshold. The
 main purpose of this system is to monitor plants and when they might need water.
 Particularly useful for people who forget to water their plants. This system will
 check the soil moisture once every day and notify the user if needed.
@@ -81,7 +79,7 @@ The firmware has the following dependencies:
 
 ### SendGrid API v3
 
-The firmware uses [SendGrid](https://sendgrid.com/) API for sending the notification e-mails. Hence if you are
+The firmware uses [SendGrid](https://sendgrid.com/) API for sending the notification E-mails. Hence if you are
 compiling the firmware you have to provide the SendGrid API v3 key.
 
 :information_source: **_NOTE: The released firmware binaries are already compiled with the key._**

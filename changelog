@@ -4,3 +4,9 @@
 10-03-2018: v2
 - Add changelog.
 - Add WiFi AP search feature on the web interface.
+
+28-03-2019: v3
+- Docker based build system.
+- Use SendGrid as E-mail notification backend.
+- Read ADC during WiFi radio off to get better results.
+- State machine around WiFi events and state changes.
