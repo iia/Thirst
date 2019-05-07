@@ -109,7 +109,7 @@ firmware binaries will be generated in the *src/bin* directory. The script takes
 the only argument.
 
 ```console
-foo@bar:~/thirst$ ./thirst-build.sh "<SG_API_KEY>"
+foo@bar:~/thirst$ ./thirst-build.sh "<GATEWAY_KEY>"
 ```
 
 ### thirst-build-flash.sh
@@ -120,7 +120,7 @@ of flashing the built firmware. This script takes two arguments:
  * The serial interface to be used to flash the Wio Node.
 
 ```console
-foo@bar:~/thirst$ ./thirst-build-flash.sh "<SG_API_KEY>" /dev/ttyUSB0
+foo@bar:~/thirst$ ./thirst-build-flash.sh "<GATEWAY_KEY>" /dev/ttyUSB0
 ```
 
 Considering */dev/ttyUSB0* is the serial interface to be used for flashing the Wio Node.

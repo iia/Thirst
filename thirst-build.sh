@@ -9,9 +9,8 @@ fi
 docker \
     run \
     -it \
-    -v $(pwd)/src:/home/thirst/src \
+    -v $(pwd)/firmware:/home/thirst/firmware \
     -u thirst \
-    -w /home/thirst/src/ \
+    -w /home/thirst/firmware/ \
     iia86/env_build_thirst:v1 \
     ./thirst-build.sh "$1"
-
