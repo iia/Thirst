@@ -1,4 +1,4 @@
 .vscode/
 src/bin/upgrade/
+firmware/bin/upgrade/
 src/libesphttpd/html_compressed/
-
