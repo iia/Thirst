@@ -1605,6 +1605,7 @@ sys_task_handler_main(os_event_t* task_event) {
 			#if (SYS_ENABLE_DEBUG == 1)
 				os_printf("\n[+] DBG :: SYSTEM :: Main task handler, Task = UNKNOWN\n");
 			#endif
+			;
 	}
 }
 
