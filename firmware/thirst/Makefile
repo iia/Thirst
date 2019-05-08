@@ -8,18 +8,18 @@
 #	[+] SUBDIRS (all subdirs with a Makefile).
 #
 #	[+] GEN_LIBS
-#		List of libs to be generated.
+#			List of libs to be generated.
 #
 #	[+] GEN_IMAGES
-#		List of object file images to be generated.
+#			List of object file images to be generated.
 #
 #	[+] GEN_BINS
-#		List of binaries to be generated.
+#			List of binaries to be generated.
 #
 #	[+] COMPONENTS_xxx
-#		A list of libs/objs in the form subdir/lib
-#		to be extracted and rolled up into a generated
-#		lib/image xxx.a.
+#			A list of libs/objs in the form subdir/lib
+#			to be extracted and rolled up into a generated
+#			lib/image xxx.a.
 TARGET = eagle
 
 FLAVOR = debug
