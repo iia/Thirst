@@ -2,7 +2,7 @@
 #define SYSTEM_H
 
 // Enable/disable debug prints.
-#define SYS_ENABLE_DEBUG 1
+#define SYS_ENABLE_DEBUG 0
 
 // System partition table (required since SDK 3.0.0).
 #define SYS_PARTITION_BOOTLOADER_SIZE       0x001000
