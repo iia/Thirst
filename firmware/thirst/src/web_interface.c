@@ -30,7 +30,7 @@ web_interface_init(void) {
 		) != ESPFS_INIT_RESULT_OK
 	)
 	{
-		#if (SYS_ENABLE_DEBUG == 1)
+		#if (PERIPH_ENABLE_DEBUG == 1)
 			os_printf(
 				"\n[+] DBG :: WEB :: File system initialisation failed for libesphttpd\n"
 			);
@@ -48,12 +48,12 @@ web_interface_cb_wifi_scan_done(void* bss_info_list, STATUS status) {
 	struct bss_info* bss_info_list_element = NULL;
 	WEB_INTERFACE_AP_LIST_ELEM_t* ap_list_element = NULL;
 
-	#if (SYS_ENABLE_DEBUG == 1)
+	#if (PERIPH_ENABLE_DEBUG == 1)
 		os_printf("\n[+] DBG :: WEB :: WiFi scan finished\n");
 	#endif
 
 	if (status != OK || bss_info_list == NULL) {
-		#if (SYS_ENABLE_DEBUG == 1)
+		#if (PERIPH_ENABLE_DEBUG == 1)
 			os_printf("\n[+] DBG :: WEB :: WiFi scan failed or nothing found\n");
 		#endif
 
@@ -111,7 +111,7 @@ web_interface_cb_wifi_scan_done(void* bss_info_list, STATUS status) {
 bool ICACHE_FLASH_ATTR
 web_interface_start_wifi_scan(void) {
 	if (web_interface_waiting_wifi_scan_cb) {
-		#if (SYS_ENABLE_DEBUG == 1)
+		#if (PERIPH_ENABLE_DEBUG == 1)
 			os_printf("\n[+] DBG :: WEB :: WiFi scan in progress\n");
 		#endif
 
@@ -127,14 +127,14 @@ web_interface_start_wifi_scan(void) {
 		)
 	)
 	{
-		#if (SYS_ENABLE_DEBUG == 1)
+		#if (PERIPH_ENABLE_DEBUG == 1)
 			os_printf("\n[+] DBG :: WEB :: Failed to start WiFi scan\n");
 		#endif
 
 		return false;
 	}
 
-	#if (SYS_ENABLE_DEBUG == 1)
+	#if (PERIPH_ENABLE_DEBUG == 1)
 		os_printf("\n[+] DBG :: WEB :: WiFi scan started\n");
 	#endif
 
@@ -167,7 +167,7 @@ web_interface_save_config_to_flash(void) {
 		)
 	)
 	{
-		#if (SYS_ENABLE_DEBUG == 1)
+		#if (PERIPH_ENABLE_DEBUG == 1)
 			os_printf("\n[+] DBG :: WEB :: Save config, RTC data write failed\n");
 		#endif
 
@@ -177,7 +177,7 @@ web_interface_save_config_to_flash(void) {
 	// Generate checksum of the current configuration.
 	config_current->hash = config_get_hash_pearson((uint8_t*)config_current);
 
-	#if (SYS_ENABLE_DEBUG == 1)
+	#if (PERIPH_ENABLE_DEBUG == 1)
 		os_printf("\n[+] DBG :: WEB :: Saving following configuration to flash\n");
 
 		os_printf(
@@ -245,7 +245,7 @@ web_interface_save_config_to_flash(void) {
 		(spi_flash_erase_sector(config_flash_sector)) != SPI_FLASH_RESULT_OK
 	)
 	{
-		#if (SYS_ENABLE_DEBUG == 1)
+		#if (PERIPH_ENABLE_DEBUG == 1)
 			os_printf("\n[+] DBG :: WEB :: Configuration save, flash erase failed\n");
 		#endif
 
@@ -262,7 +262,7 @@ web_interface_save_config_to_flash(void) {
 			) != SPI_FLASH_RESULT_OK
 		)
 		{
-			#if (SYS_ENABLE_DEBUG == 1)
+			#if (PERIPH_ENABLE_DEBUG == 1)
 				os_printf("\n[+] DBG :: WEB :: Configuration save, flash write failed\n");
 			#endif
 
@@ -280,7 +280,7 @@ web_interface_clear_wifi_scan_result(
 {
 	WEB_INTERFACE_AP_LIST_ELEM_t* ap_list_element = NULL;
 
-	#if (SYS_ENABLE_DEBUG == 1)
+	#if (PERIPH_ENABLE_DEBUG == 1)
 		os_printf("\n[+] DBG :: WEB :: Clearing WiFi scan result\n");
 	#endif
 
@@ -399,7 +399,7 @@ web_interface_cgi_root(
 	void** arg
 )
 {
-	#if (SYS_ENABLE_DEBUG == 1)
+	#if (PERIPH_ENABLE_DEBUG == 1)
 		os_printf("\n[+] DBG :: WEB-CGI :: Serving URL = /index.html\n");
 	#endif
 
@@ -421,7 +421,7 @@ web_interface_cgi_get_config(HttpdConnData* connection_data) {
 	char* buffer_response = (uint8_t*)os_malloc(8192);
 	char* buffer_response_data = (uint8_t*)os_malloc(4096);
 
-	#if (SYS_ENABLE_DEBUG == 1)
+	#if (PERIPH_ENABLE_DEBUG == 1)
 		os_printf("\n[+] DBG :: WEB-CGI :: Serving URL = /get_config.cgi\n");
 	#endif
 
@@ -537,7 +537,7 @@ web_interface_cgi_save_config(HttpdConnData* connection_data) {
 	char notification_email_subject[CONFIG_NOTIFICATION_SUBJECT_LEN + 1];
 	char notification_email_message[CONFIG_NOTIFICATION_MESSAGE_LEN + 1];
 
-	#if (SYS_ENABLE_DEBUG == 1)
+	#if (PERIPH_ENABLE_DEBUG == 1)
 		os_printf("\n[+] DBG :: WEB-CGI :: Serving URL = /save_config.cgi\n");
 	#endif
 
@@ -576,7 +576,7 @@ web_interface_cgi_save_config(HttpdConnData* connection_data) {
 		) <= 0
 	)
 	{
-		#if (SYS_ENABLE_DEBUG == 1)
+		#if (PERIPH_ENABLE_DEBUG == 1)
 			os_printf("\n[+] DBG WEB-CGI :: Can't get JSON data length\n");
 		#endif
 
@@ -599,7 +599,7 @@ web_interface_cgi_save_config(HttpdConnData* connection_data) {
 		) <= 0
 	)
 	{
-		#if (SYS_ENABLE_DEBUG == 1)
+		#if (PERIPH_ENABLE_DEBUG == 1)
 			os_printf("\n[+] DBG :: WEB-CGI :: Can't get JSON data\n");
 		#endif
 
@@ -825,7 +825,7 @@ web_interface_cgi_save_config(HttpdConnData* connection_data) {
 			"{}"
 		);
 
-		#if (SYS_ENABLE_DEBUG == 1)
+		#if (PERIPH_ENABLE_DEBUG == 1)
 			os_printf("\n[+] DBG :: WEB-CGI :: Scheduling system reset with delay\n");
 		#endif
 
@@ -866,7 +866,7 @@ web_interface_cgi_start_wifi_scan(HttpdConnData* connection_data) {
 
 	os_bzero(buffer_response, 64);
 
-	#if (SYS_ENABLE_DEBUG == 1)
+	#if (PERIPH_ENABLE_DEBUG == 1)
 		os_printf("\n[+] DBG :: WEB-CGI :: Serving URL = /start_wifi_scan.cgi\n");
 	#endif
 
@@ -905,14 +905,14 @@ web_interface_cgi_get_sensor_reading(HttpdConnData* connection_data) {
 	uint32_t sensor_reading = 0;
 	char* buffer_response = (uint8_t*)os_malloc(512);
 
-	#if (SYS_ENABLE_DEBUG == 1)
+	#if (PERIPH_ENABLE_DEBUG == 1)
 		os_printf("\n[+] DBG :: WEB-CGI :: Serving URL = /get_sensor_reading.cgi\n");
 	#endif
 
 	os_bzero(buffer_response, sizeof(buffer_response));
 	sensor_reading = periph_read_adc((uint32_t)PERIPH_ADC_SAMPLE_SIZE);
 
-	#if (SYS_ENABLE_DEBUG == 1)
+	#if (PERIPH_ENABLE_DEBUG == 1)
 		os_printf("\n[+] DBG :: WEB-CGI :: Sensor reading = %d\n", sensor_reading);
 	#endif
 
@@ -941,7 +941,7 @@ web_interface_cgi_get_wifi_scan_result(HttpdConnData* connection_data) {
 	char* buffer_response = NULL;
 	char* _buffer_response = NULL;
 
-	#if (SYS_ENABLE_DEBUG == 1)
+	#if (PERIPH_ENABLE_DEBUG == 1)
 		os_printf("\n[+] DBG :: WEB-CGI :: Serving URL = /get_wifi_scan_result.cgi\n");
 	#endif
 

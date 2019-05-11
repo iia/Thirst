@@ -1,6 +1,9 @@
 #ifndef PERIPHERALS_H
 #define PERIPHERALS_H
 
+// Enable/disable debug prints.
+#define PERIPH_ENABLE_DEBUG 0
+
 // RTC memory.
 #define PERIPH_MEM_ADDR_RTC 0x40
 

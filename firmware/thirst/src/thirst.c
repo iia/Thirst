@@ -101,7 +101,7 @@ gateway_cb_sock_rx(void* arg, char* data, unsigned short length) {
 	os_bzero(&line_first, 256);
 	os_bzero(&line_http_code, 8);
 
-	#if (SYS_ENABLE_DEBUG == 1)
+	#if (PERIPH_ENABLE_DEBUG == 1)
 		os_printf("\n[+] DBG :: GATEWAY :: RX OK\n");
 
 		os_printf(
@@ -134,7 +134,7 @@ gateway_cb_sock_rx(void* arg, char* data, unsigned short length) {
 
 	code_http = strtoul(line_http_code, NULL, 10);
 
-	#if (SYS_ENABLE_DEBUG == 1)
+	#if (PERIPH_ENABLE_DEBUG == 1)
 		os_printf(
 			"\n[+] DBG :: GATEWAY :: RX, HTTP Response code = %d\n",
 			code_http
@@ -142,7 +142,7 @@ gateway_cb_sock_rx(void* arg, char* data, unsigned short length) {
 	#endif
 
 	if (code_http != GATEWAY_HTTP_CODE_ACCEPTED) {
-		#if (SYS_ENABLE_DEBUG == 1)
+		#if (PERIPH_ENABLE_DEBUG == 1)
 			os_printf(
 				"\n[+] DBG :: GATEWAY :: HTTP response validation failed, received = 0x%X, expected = 0x%X\n",
 				code_http,
@@ -153,12 +153,12 @@ gateway_cb_sock_rx(void* arg, char* data, unsigned short length) {
 		sys_state_transition(SYS_STATE_SEND_DATA, SYS_STATE_ERROR);
 
 		if (espconn_secure_disconnect(&gateway_sock)) {
-			#if (SYS_ENABLE_DEBUG == 1)
+			#if (PERIPH_ENABLE_DEBUG == 1)
 				os_printf("\n[+] DBG :: GATEWAY :: Socket disconnect failed\n");
 			#endif
 
 			if (!wifi_station_disconnect()) {
-				#if (SYS_ENABLE_DEBUG == 1)
+				#if (PERIPH_ENABLE_DEBUG == 1)
 					os_printf(
 						"\n[+] DBG :: GATEWAY :: WiFi station mode disconnect failed\n"
 					);
@@ -188,12 +188,12 @@ gateway_cb_sock_rx(void* arg, char* data, unsigned short length) {
 	sys_state_transition(SYS_STATE_SEND_DATA, SYS_STATE_SEND_DATA_DONE);
 
 	if (espconn_secure_disconnect(&gateway_sock)) {
-		#if (SYS_ENABLE_DEBUG == 1)
+		#if (PERIPH_ENABLE_DEBUG == 1)
 			os_printf("\n[+] DBG :: GATEWAY :: Socket disconnect failed\n");
 		#endif
 
 		if (!wifi_station_disconnect()) {
-			#if (SYS_ENABLE_DEBUG == 1)
+			#if (PERIPH_ENABLE_DEBUG == 1)
 				os_printf(
 					"\n[+] DBG :: GATEWAY :: WiFi station mode disconnect failed\n"
 				);
@@ -224,7 +224,7 @@ gateway_cb_dns_resolved(const char* hostname, ip_addr_t* ip_resolved, void* arg)
 		ip_server[2] = *((uint8*)&ip_resolved->addr + 2);
 		ip_server[3] = *((uint8*)&ip_resolved->addr + 3);
 
-		#if (SYS_ENABLE_DEBUG == 1)
+		#if (PERIPH_ENABLE_DEBUG == 1)
 			os_printf(
 				"\n[+] DBG :: GATEWAY :: DNS resolved, IP = %d.%d.%d.%d\n",
 				ip_server[0],
@@ -263,7 +263,7 @@ gateway_cb_dns_resolved(const char* hostname, ip_addr_t* ip_resolved, void* arg)
 			)
 		)
 		{
-			#if (SYS_ENABLE_DEBUG == 1)
+			#if (PERIPH_ENABLE_DEBUG == 1)
 				os_printf("\n[+] DBG :: GATEWAY :: TLS socket initialisation failed\n");
 			#endif
 
@@ -278,13 +278,13 @@ gateway_cb_dns_resolved(const char* hostname, ip_addr_t* ip_resolved, void* arg)
 			}
 		}
 		else {
-			#if (SYS_ENABLE_DEBUG == 1)
+			#if (PERIPH_ENABLE_DEBUG == 1)
 				os_printf("\n[+] DBG :: GATEWAY :: TLS socket initialised\n");
 			#endif
 
 			// Connect the socket.
 			if (espconn_secure_connect(&gateway_sock)) {
-				#if (SYS_ENABLE_DEBUG == 1)
+				#if (PERIPH_ENABLE_DEBUG == 1)
 					os_printf("\n[+] DBG :: GATEWAY :: TLS Socket connect failed\n");
 				#endif
 
@@ -299,14 +299,14 @@ gateway_cb_dns_resolved(const char* hostname, ip_addr_t* ip_resolved, void* arg)
 				}
 			}
 			else {
-				#if (SYS_ENABLE_DEBUG == 1)
+				#if (PERIPH_ENABLE_DEBUG == 1)
 					os_printf("\n[+] DBG :: GATEWAY :: TLS socket connecting\n");
 				#endif
 			}
 		}
 	}
 	else {
-		#if (SYS_ENABLE_DEBUG == 1)
+		#if (PERIPH_ENABLE_DEBUG == 1)
 			os_printf("\n[+] DBG :: GATEWAY :: DNS resolve failed\n");
 		#endif
 
@@ -327,19 +327,19 @@ gateway_cb_timeout_rx(void) {
 	// Reset the RX timer.
 	os_timer_disarm(&sys_timer_sw);
 
-	#if (SYS_ENABLE_DEBUG == 1)
+	#if (PERIPH_ENABLE_DEBUG == 1)
 		os_printf("\n[+] DBG :: GATEWAY :: RX timed out\n");
 	#endif
 
 	sys_state_transition(SYS_STATE_SEND_DATA, SYS_STATE_ERROR);
 
 	if (espconn_secure_disconnect(&gateway_sock)) {
-		#if (SYS_ENABLE_DEBUG == 1)
+		#if (PERIPH_ENABLE_DEBUG == 1)
 			os_printf("\n[+] DBG :: GATEWAY :: Socket disconnect failed\n");
 		#endif
 
 		if (!wifi_station_disconnect()) {
-			#if (SYS_ENABLE_DEBUG == 1)
+			#if (PERIPH_ENABLE_DEBUG == 1)
 				os_printf(
 					"\n[+] DBG :: GATEWAY :: WiFi station mode disconnect failed\n"
 				);
@@ -356,7 +356,7 @@ gateway_cb_timeout_rx(void) {
 
 void ICACHE_FLASH_ATTR
 gateway_cb_sock_tx(void* arg) {
-	#if (SYS_ENABLE_DEBUG == 1)
+	#if (PERIPH_ENABLE_DEBUG == 1)
 		os_printf(
 			"\n[+] DBG :: GATEWAY :: TX OK, waiting for response\n"
 		);
@@ -368,7 +368,7 @@ gateway_cb_sock_connect(void* arg) {
 	char buffer_json_data[1024];
 	char* buffer_message = (char*)malloc(GATEWAY_SIZE_SEND_BUFFER);
 
-	#if (SYS_ENABLE_DEBUG == 1)
+	#if (PERIPH_ENABLE_DEBUG == 1)
 		os_printf("\n[+] DBG :: GATEWAY :: Socket connected\n");
 	#endif
 
@@ -403,7 +403,7 @@ gateway_cb_sock_connect(void* arg) {
 		buffer_json_data
 	);
 
-	#if (SYS_ENABLE_DEBUG == 1)
+	#if (PERIPH_ENABLE_DEBUG == 1)
 		os_printf(
 			"\n[+] DBG :: GATEWAY :: Sending notification, JSON data = %s\n",
 			buffer_json_data
@@ -419,7 +419,7 @@ gateway_cb_sock_connect(void* arg) {
 		)
 	)
 	{
-		#if (SYS_ENABLE_DEBUG == 1)
+		#if (PERIPH_ENABLE_DEBUG == 1)
 			os_printf(
 				"\n[+] DBG :: GATEWAY :: Sending data using socket failed\n"
 			);
@@ -428,12 +428,12 @@ gateway_cb_sock_connect(void* arg) {
 		sys_state_transition(SYS_STATE_SEND_DATA, SYS_STATE_ERROR);
 
 		if (espconn_secure_disconnect(&gateway_sock)) {
-			#if (SYS_ENABLE_DEBUG == 1)
+			#if (PERIPH_ENABLE_DEBUG == 1)
 				os_printf("\n[+] DBG :: GATEWAY :: Socket disconnect failed\n");
 			#endif
 
 			if (!wifi_station_disconnect()) {
-				#if (SYS_ENABLE_DEBUG == 1)
+				#if (PERIPH_ENABLE_DEBUG == 1)
 					os_printf(
 						"\n[+] DBG :: GATEWAY :: WiFi station mode disconnect failed\n"
 					);
@@ -448,7 +448,7 @@ gateway_cb_sock_connect(void* arg) {
 		}
 	}
 	else {
-		#if (SYS_ENABLE_DEBUG == 1)
+		#if (PERIPH_ENABLE_DEBUG == 1)
 			os_printf("\n[+] DBG :: GATEWAY :: Sent data using socket\n");
 		#endif
 
@@ -468,12 +468,12 @@ gateway_cb_sock_connect(void* arg) {
 
 void ICACHE_FLASH_ATTR
 gateway_cb_sock_disconnect(void* arg) {
-	#if (SYS_ENABLE_DEBUG == 1)
+	#if (PERIPH_ENABLE_DEBUG == 1)
 		os_printf("\n[+] DBG :: GATEWAY :: Socket disconnected\n");
 	#endif
 
 	if (!wifi_station_disconnect()) {
-		#if (SYS_ENABLE_DEBUG == 1)
+		#if (PERIPH_ENABLE_DEBUG == 1)
 			os_printf(
 				"\n[+] DBG :: GATEWAY :: WiFi station mode disconnect failed\n"
 			);
@@ -491,7 +491,7 @@ gateway_cb_sock_disconnect(void* arg) {
 
 bool ICACHE_FLASH_ATTR
 config_read(void) {
-	#if (SYS_ENABLE_DEBUG == 1)
+	#if (PERIPH_ENABLE_DEBUG == 1)
 		os_printf(
 			"\n[+] DBG :: CONFIG :: Reading configuration from flash\n"
 		);
@@ -509,7 +509,7 @@ config_read(void) {
 		) != SPI_FLASH_RESULT_OK
 	)
 	{
-		#if (SYS_ENABLE_DEBUG == 1)
+		#if (PERIPH_ENABLE_DEBUG == 1)
 			os_printf(
 				"\n[+] DBG :: CONFIG :: Reading configuration failed\n"
 			);
@@ -534,7 +534,7 @@ config_get_default_plant_name(char* default_plant_name, uint8_t len) {
 
 void ICACHE_FLASH_ATTR
 config_load_default_config(void) {
-	#if (SYS_ENABLE_DEBUG == 1)
+	#if (PERIPH_ENABLE_DEBUG == 1)
 		os_printf(
 			"\n[+] DBG :: CONFIG :: Loading default configuration\n"
 		);
@@ -584,7 +584,7 @@ config_get_hash_pearson(uint8_t* bytes) {
 
 void ICACHE_FLASH_ATTR
 periph_sesnor_toggle(bool toggle) {
-	#if (SYS_ENABLE_DEBUG == 1)
+	#if (PERIPH_ENABLE_DEBUG == 1)
 		os_printf(
 			"\n[+] DBG :: PERIPH :: Toggle Sensor, toggle = %d\n",
 			toggle
@@ -723,7 +723,7 @@ thirst_init_main_task(void) {
 
 void ICACHE_FLASH_ATTR
 sys_cb_init_done(void) {
-	#if (SYS_ENABLE_DEBUG == 1)
+	#if (PERIPH_ENABLE_DEBUG == 1)
 		// Setup the debug UART.
 		uart_div_modify(UART0, PERIPH_UART_BIT_RATE);
 		system_set_os_print(1);
@@ -788,7 +788,7 @@ sys_deep_sleep_cycle(void) {
 		)
 	)
 	{
-		#if (SYS_ENABLE_DEBUG == 1)
+		#if (PERIPH_ENABLE_DEBUG == 1)
 			os_printf("\n[+] DBG :: SYSTEM :: RTC memory read failed\n");
 		#endif
 
@@ -822,7 +822,7 @@ sys_deep_sleep_cycle(void) {
 			)
 		)
 		{
-			#if (SYS_ENABLE_DEBUG == 1)
+			#if (PERIPH_ENABLE_DEBUG == 1)
 				os_printf(
 					"\n[+] DBG :: SYSTEM :: RTC count up and write, Sleep count = %d\n",
 					sys_rtc_data.sleep_count
@@ -851,7 +851,7 @@ sys_deep_sleep_cycle(void) {
 			);
 		}
 		else {
-			#if (SYS_ENABLE_DEBUG == 1)
+			#if (PERIPH_ENABLE_DEBUG == 1)
 				os_printf("\n[+] DBG :: SYSTEM :: RTC memory write failed\n");
 			#endif
 
@@ -877,7 +877,7 @@ sys_deep_sleep_cycle(void) {
 			)
 		)
 		{
-			#if (SYS_ENABLE_DEBUG == 1)
+			#if (PERIPH_ENABLE_DEBUG == 1)
 				os_printf("\n[+] DBG :: SYSTEM :: RTC memory reset condition write failed\n");
 			#endif
 
@@ -918,7 +918,7 @@ sys_state_transition_with_task(
 	ETSParam sys_task_param
 )
 {
-	#if (SYS_ENABLE_DEBUG == 1)
+	#if (PERIPH_ENABLE_DEBUG == 1)
 		os_printf(
 			"\n[+] DBG :: SYSTEM :: State transition with task, State = %d -> %d, Task = %d\n",
 			state_current,
@@ -944,7 +944,7 @@ sys_state_transition_with_wifi_mode(
 	int mode
 )
 {
-	#if (SYS_ENABLE_DEBUG == 1)
+	#if (PERIPH_ENABLE_DEBUG == 1)
 		os_printf(
 			"\n[+] DBG :: SYSTEM :: State transition with WiFi mode, State = %d -> %d, Mode = %d\n",
 			state_current,
@@ -976,12 +976,12 @@ sys_cb_wifi_event(System_Event_t* evt) {
 
 	// Events: Station mode.
 	if (evt->event == EVENT_STAMODE_CONNECTED) {
-		#if (SYS_ENABLE_DEBUG == 1)
+		#if (PERIPH_ENABLE_DEBUG == 1)
 			os_printf("\n[+] DBG :: SYSTEM :: WiFi station mode connected\n");
 		#endif
 	}
 	else if (evt->event == EVENT_STAMODE_DISCONNECTED) {
-		#if (SYS_ENABLE_DEBUG == 1)
+		#if (PERIPH_ENABLE_DEBUG == 1)
 			os_printf("\n[+] DBG :: SYSTEM :: WiFi station mode disconnected\n");
 		#endif
 
@@ -1002,7 +1002,7 @@ sys_cb_wifi_event(System_Event_t* evt) {
 		wifi_set_opmode_current(NULL_MODE);
 	}
 	else if (evt->event == EVENT_STAMODE_AUTHMODE_CHANGE) {
-		#if (SYS_ENABLE_DEBUG == 1)
+		#if (PERIPH_ENABLE_DEBUG == 1)
 			os_printf(
 				"\n[+] DBG :: SYSTEM :: WiFi station mode auth mode changed = %d -> %d\n",
 				evt->event_info.auth_change.old_mode,
@@ -1011,7 +1011,7 @@ sys_cb_wifi_event(System_Event_t* evt) {
 		#endif
 	}
 	else if (evt->event == EVENT_STAMODE_GOT_IP) {
-		#if (SYS_ENABLE_DEBUG == 1)
+		#if (PERIPH_ENABLE_DEBUG == 1)
 			os_printf("\n[+] DBG :: SYSTEM :: WiFi station mode got IP\n");
 		#endif
 
@@ -1029,7 +1029,7 @@ sys_cb_wifi_event(System_Event_t* evt) {
 		percentage = \
 			(config_current->registered_value * config_current->threshold_percent) / 100;
 
-		#if (SYS_ENABLE_DEBUG == 1)
+		#if (PERIPH_ENABLE_DEBUG == 1)
 			os_printf("\n[+] DBG :: SYSTEM :: ADC reading = %d\n", adc);
 		#endif
 
@@ -1057,21 +1057,21 @@ sys_cb_wifi_event(System_Event_t* evt) {
 
 			switch(err) {
 				case ESPCONN_OK:
-					#if (SYS_ENABLE_DEBUG == 1)
+					#if (PERIPH_ENABLE_DEBUG == 1)
 						os_printf("\n[+] DBG :: SYSTEM :: DNS lookup started\n");
 					#endif
 
 					break;
 
 				case ESPCONN_INPROGRESS:
-					#if (SYS_ENABLE_DEBUG == 1)
+					#if (PERIPH_ENABLE_DEBUG == 1)
 						os_printf("\n[+] DBG :: SYSTEM :: DNS lookup in progress\n");
 					#endif
 
 					break;
 
 				default:
-					#if (SYS_ENABLE_DEBUG == 1)
+					#if (PERIPH_ENABLE_DEBUG == 1)
 						os_printf("\n[+] DBG :: SYSTEM :: DNS lookup error\n");
 					#endif
 
@@ -1102,7 +1102,7 @@ sys_cb_wifi_event(System_Event_t* evt) {
 			sys_state_transition(SYS_STATE_SEND_DATA, SYS_STATE_DEEP_SLEEP);
 
 			if (!wifi_station_disconnect()) {
-				#if (SYS_ENABLE_DEBUG == 1)
+				#if (PERIPH_ENABLE_DEBUG == 1)
 					os_printf(
 						"\n[+] DBG :: SYSTEM :: WiFi station mode disconnect failed\n"
 					);
@@ -1117,14 +1117,14 @@ sys_cb_wifi_event(System_Event_t* evt) {
 		}
 	}
 	else if (evt->event == EVENT_STAMODE_DHCP_TIMEOUT) {
-		#if (SYS_ENABLE_DEBUG == 1)
+		#if (PERIPH_ENABLE_DEBUG == 1)
 			os_printf("\n[+] DBG :: SYSTEM :: WiFi station mode DHCP timeout\n");
 		#endif
 
 		sys_state_transition(SYS_STATE_SEND_DATA, SYS_STATE_ERROR);
 
 		if (!wifi_station_disconnect()) {
-			#if (SYS_ENABLE_DEBUG == 1)
+			#if (PERIPH_ENABLE_DEBUG == 1)
 				os_printf("\n[+] DBG :: SYSTEM :: WiFi station mode disconnect failed\n");
 			#endif
 
@@ -1137,21 +1137,21 @@ sys_cb_wifi_event(System_Event_t* evt) {
 	}
 	// Events: SoftAP mode.
 	else if (evt->event == EVENT_SOFTAPMODE_STACONNECTED) {
-		#if (SYS_ENABLE_DEBUG == 1)
+		#if (PERIPH_ENABLE_DEBUG == 1)
 			os_printf(
 				"\n[+] DBG :: SYSTEM :: WiFi SoftAP station connected\n"
 			);
 		#endif
 	}
 	else if (evt->event == EVENT_SOFTAPMODE_STADISCONNECTED) {
-		#if (SYS_ENABLE_DEBUG == 1)
+		#if (PERIPH_ENABLE_DEBUG == 1)
 			os_printf(
 				"\n[+] DBG :: SYSTEM :: WiFi SoftAP station disconnected\n"
 			);
 		#endif
 	}
 	else if (evt->event == EVENT_SOFTAPMODE_DISTRIBUTE_STA_IP) {
-		#if (SYS_ENABLE_DEBUG == 1)
+		#if (PERIPH_ENABLE_DEBUG == 1)
 			os_printf(
 				"\n[+] DBG :: SYSTEM :: WiFi SoftAP leased DHCP IP\n"
 			);
@@ -1162,13 +1162,13 @@ sys_cb_wifi_event(System_Event_t* evt) {
 	}
 	// Operating mode changed event.
 	else if (evt->event == EVENT_OPMODE_CHANGED) {
-		#if (SYS_ENABLE_DEBUG == 1)
+		#if (PERIPH_ENABLE_DEBUG == 1)
 			os_printf("\n[+] DBG :: SYSTEM :: WiFi operating mode changed\n");
 		#endif
 
 		// Operating mode switched: Null mode.
 		if (wifi_get_opmode() == NULL_MODE) {
-			#if (SYS_ENABLE_DEBUG == 1)
+			#if (PERIPH_ENABLE_DEBUG == 1)
 				os_printf("\n[+] DBG :: SYSTEM :: WiFi NULL mode\n");
 			#endif
 
@@ -1178,7 +1178,7 @@ sys_cb_wifi_event(System_Event_t* evt) {
 				(sys_state.state_next == SYS_STATE_ERROR_INIT_MAIN_TASK)\
 			)\
 			{
-				#if (SYS_ENABLE_DEBUG == 1)
+				#if (PERIPH_ENABLE_DEBUG == 1)
 					os_printf("\n[+] DBG :: SYSTEM :: Failed to initialise the main task\n");
 				#endif
 
@@ -1228,7 +1228,7 @@ sys_cb_wifi_event(System_Event_t* evt) {
 					(char*)os_malloc(WEB_INTERFACE_FORM_POST_BUFFER_SIZE); // Used by the web interface.
 
 				if ((config_current == NULL) || (web_interface_buffer_post_form == NULL)) {
-					#if (SYS_ENABLE_DEBUG == 1)
+					#if (PERIPH_ENABLE_DEBUG == 1)
 						os_printf(
 							"\n[+] DBG :: SYSTEM :: Memory allocation failed for configuration and web interface form POST buffer\n"
 						);
@@ -1252,7 +1252,7 @@ sys_cb_wifi_event(System_Event_t* evt) {
 					);
 				}
 				else {
-					#if (SYS_ENABLE_DEBUG == 1)
+					#if (PERIPH_ENABLE_DEBUG == 1)
 						os_printf(
 							"\n[+] DBG :: SYSTEM :: Configuration read OK\n"
 						);
@@ -1292,7 +1292,7 @@ sys_cb_wifi_event(System_Event_t* evt) {
 					config_hash = \
 						config_get_hash_pearson((uint8_t*)config_current);
 
-					#if (SYS_ENABLE_DEBUG == 1)
+					#if (PERIPH_ENABLE_DEBUG == 1)
 						os_printf(
 							"\n[+] DBG :: SYSTEM :: Pearson hash of the read configuration = 0x%X\n",
 							config_hash
@@ -1300,7 +1300,7 @@ sys_cb_wifi_event(System_Event_t* evt) {
 					#endif
 
 					if (config_hash != config_current->hash) {
-						#if (SYS_ENABLE_DEBUG == 1)
+						#if (PERIPH_ENABLE_DEBUG == 1)
 							os_printf(
 								"\n[+] DBG :: SYSTEM :: Configuration hash mismatch, calcualted = 0x%X, expected = 0x%X\n",
 								config_hash,
@@ -1345,7 +1345,7 @@ sys_cb_wifi_event(System_Event_t* evt) {
 				(sys_state.state_next == SYS_STATE_RESET_AFTER_CONFIG_SAVE)\
 			)\
 			{
-				#if (SYS_ENABLE_DEBUG == 1)
+				#if (PERIPH_ENABLE_DEBUG == 1)
 					os_printf(
 						"\n[+] DBG :: SYSTEM :: System reset after config save\n"
 					);
@@ -1364,7 +1364,7 @@ sys_cb_wifi_event(System_Event_t* evt) {
 				)
 			)
 			{
-				#if (SYS_ENABLE_DEBUG == 1)
+				#if (PERIPH_ENABLE_DEBUG == 1)
 					os_printf("\n[+] DBG :: SYSTEM :: Going to deep sleep mode\n");
 				#endif
 
@@ -1381,7 +1381,7 @@ sys_cb_wifi_event(System_Event_t* evt) {
 				)
 			)
 			{
-				#if (SYS_ENABLE_DEBUG == 1)
+				#if (PERIPH_ENABLE_DEBUG == 1)
 					os_printf(
 						"\n[+] DBG :: SYSTEM :: Send data done, going to deep sleep mode\n"
 					);
@@ -1394,7 +1394,7 @@ sys_cb_wifi_event(System_Event_t* evt) {
 				);
 			}
 			else if (sys_state.state_next == SYS_STATE_ERROR) {
-				#if (SYS_ENABLE_DEBUG == 1)
+				#if (PERIPH_ENABLE_DEBUG == 1)
 					os_printf(
 						"\n[+] DBG :: SYSTEM :: Error state in WiFi null mode\n"
 					);
@@ -1409,7 +1409,7 @@ sys_cb_wifi_event(System_Event_t* evt) {
 		}
 		// Operating mode switched: Station mode.
 		else if (wifi_get_opmode() == STATION_MODE) {
-			#if (SYS_ENABLE_DEBUG == 1)
+			#if (PERIPH_ENABLE_DEBUG == 1)
 				os_printf("\n[+] DBG :: SYSTEM :: WiFi station mode\n");
 			#endif
 
@@ -1446,7 +1446,7 @@ sys_cb_wifi_event(System_Event_t* evt) {
 				!(wifi_station_connect())
 			)
 			{
-				#if (SYS_ENABLE_DEBUG == 1)
+				#if (PERIPH_ENABLE_DEBUG == 1)
 					os_printf("\n[+] DBG :: SYSTEM :: WiFi station mode connect failed\n");
 				#endif
 
@@ -1465,7 +1465,7 @@ sys_cb_wifi_event(System_Event_t* evt) {
 		 * required.
 		 */
 		else if (wifi_get_opmode() == STATIONAP_MODE) {
-			#if (SYS_ENABLE_DEBUG == 1)
+			#if (PERIPH_ENABLE_DEBUG == 1)
 				os_printf("\n[+] DBG :: SYSTEM :: WiFi Station+AP mode\n");
 			#endif
 
@@ -1508,7 +1508,7 @@ sys_cb_wifi_event(System_Event_t* evt) {
 		}
 	}
 	else {
-		#if (SYS_ENABLE_DEBUG == 1)
+		#if (PERIPH_ENABLE_DEBUG == 1)
 			os_printf("\n[+] DBG :: SYSTEM :: WiFi unknown event\n");
 		#endif
 	}
@@ -1518,7 +1518,7 @@ void ICACHE_FLASH_ATTR
 sys_task_handler_main(os_event_t* task_event) {
 	switch (task_event->sig) {
 		case SYS_TASK_SIGNAL_CONFIG_MODE:
-			#if (SYS_ENABLE_DEBUG == 1)
+			#if (PERIPH_ENABLE_DEBUG == 1)
 				os_printf(
 					"\n[+] DBG :: SYSTEM :: Main task handler, Task = SYS_TASK_SIGNAL_CONFIG_MODE\n"
 				);
@@ -1537,7 +1537,7 @@ sys_task_handler_main(os_event_t* task_event) {
 			break;
 
 		case SYS_TASK_SIGNAL_DEEP_SLEEP_CYCLE:
-			#if (SYS_ENABLE_DEBUG == 1)
+			#if (PERIPH_ENABLE_DEBUG == 1)
 				os_printf(
 					"\n[+] DBG :: SYSTEM :: Main task handler, Task = SYS_TASK_SIGNAL_DEEP_SLEEP_CYCLE\n"
 				);
@@ -1548,7 +1548,7 @@ sys_task_handler_main(os_event_t* task_event) {
 			break;
 
 		case SYS_TASK_SIGNAL_STATE_ERROR:
-			#if (SYS_ENABLE_DEBUG == 1)
+			#if (PERIPH_ENABLE_DEBUG == 1)
 				os_printf(
 					"\n[+] DBG :: SYSTEM :: Main task handler, Task = SYS_TASK_SIGNAL_STATE_ERROR\n"
 				);
@@ -1567,7 +1567,7 @@ sys_task_handler_main(os_event_t* task_event) {
 			break;
 
 		case SYS_TASK_SIGNAL_SEND_DATA:
-			#if (SYS_ENABLE_DEBUG == 1)
+			#if (PERIPH_ENABLE_DEBUG == 1)
 				os_printf(
 					"\n[+] DBG :: SYSTEM :: Main task handler, Task = SYS_TASK_SIGNAL_SEND_DATA\n"
 				);
@@ -1579,7 +1579,7 @@ sys_task_handler_main(os_event_t* task_event) {
 
 		case SYS_TASK_SIGNAL_DEEP_SLEEP:
 		case SYS_TASK_SIGNAL_SEND_DATA_DONE:
-			#if (SYS_ENABLE_DEBUG == 1)
+			#if (PERIPH_ENABLE_DEBUG == 1)
 				os_printf(
 					"\n[+] DBG :: SYSTEM :: Main task handler, Task = SYS_TASK_SIGNAL_DEEP_SLEEP\n"
 				);
@@ -1591,7 +1591,7 @@ sys_task_handler_main(os_event_t* task_event) {
 			break;
 
 		case SYS_TASK_SIGNAL_RESET_AFTER_CONFIG_SAVE:
-			#if (SYS_ENABLE_DEBUG == 1)
+			#if (PERIPH_ENABLE_DEBUG == 1)
 				os_printf(
 					"\n[+] DBG :: SYSTEM :: Main task handler, Task = SYS_TASK_SIGNAL_RESET_AFTER_CONFIG_SAVE\n"
 				);
@@ -1602,7 +1602,7 @@ sys_task_handler_main(os_event_t* task_event) {
 			break;
 
 		default:
-			#if (SYS_ENABLE_DEBUG == 1)
+			#if (PERIPH_ENABLE_DEBUG == 1)
 				os_printf("\n[+] DBG :: SYSTEM :: Main task handler, Task = UNKNOWN\n");
 			#endif
 			;
@@ -1611,7 +1611,7 @@ sys_task_handler_main(os_event_t* task_event) {
 
 void ICACHE_FLASH_ATTR
 sys_state_transition(int state_current, int state_next) {
-	#if (SYS_ENABLE_DEBUG == 1)
+	#if (PERIPH_ENABLE_DEBUG == 1)
 		os_printf(
 			"\n[+] DBG :: SYSTEM :: State transition, State = %d -> %d\n",
 			state_current,
