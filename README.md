@@ -27,7 +27,13 @@ The moisture sensor must be connected to PORT1 of the Wio Node.
     <img
         width="350px"
         height="450px"
-        src="https://github.com/iia/Thirst/blob/master/.readme-resources/hardware.png" />
+        src="https://github.com/iia/Thirst/blob/master/.readme-resources/hardware_front.png" />
+</p>
+<p align="center">
+    <img
+        width="350px"
+        height="450px"
+        src="https://github.com/iia/Thirst/blob/master/.readme-resources/hardware_back.png" />
 </p>
 
 ## LEDs and Buttons
