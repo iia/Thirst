@@ -54,6 +54,15 @@ The following table describes the functionalities of the buttons.
 | Click     | Pressed                                             | Flashing Mode      |
 | Click x 2 | Delayed press and hold until the blue LED lights up | Configuration Mode |
 
+:information_source: **_NOTE: The RESET and the FUNCTION buttons are marked GREEN and RED respectively in the image._**
+
+<p align="center">
+    <img
+        width="428px"
+        height="434px"
+        src="https://github.com/iia/Thirst/blob/master/.readme-resources/hardware_wio_node_buttons.png" />
+</p>
+
 ## LED Indicators
 
 * Red
@@ -73,6 +82,16 @@ The following table describes the functionalities of the buttons.
     - Blinking, in error state.
 
     - Turned on, in configuration mode.
+
+:information_source: **_NOTE: The RED, GREEN and BLUE LEDs are marked RED, GREEN and BLUE respectively in the image._**
+
+
+<p align="center">
+    <img
+        width="428px"
+        height="434px"
+        src="https://github.com/iia/Thirst/blob/master/.readme-resources/hardware_wio_node_leds.png" />
+</p>
 
 ## The Firmware
 
@@ -159,13 +178,13 @@ Considering */dev/ttyUSB0* is the serial interface to be used for erasing the Wi
 
 To flash the Wio Node the serial USART device must be connected as shown below.
 
-:information_source: **_NOTE: The RED, GREEN and BLUE markings on the image represent RX,TX and GND pins respectively of the Wio Node's PORT0_**
+:information_source: **_NOTE: The RX, TX and GND of the USART interface must be connected to GPIO1/TxD, GPIO3/RxD and GND pins of PORT0 respectively as marked in the image._**
 
 <p align="center">
     <img
-        width="350px"
-        height="450px"
-        src="https://github.com/iia/Thirst/blob/master/.readme-resources/hardware_flashing.png" />
+        width="400px"
+        height="355px"
+        src="https://github.com/iia/Thirst/blob/master/.readme-resources/hardware_wio_node_pinout.png" />
 </p>
 
 ## Configuring the System
