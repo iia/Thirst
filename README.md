@@ -1,6 +1,6 @@
 <p align="center">
     <img
-        width="225px"
+        width="170px"
         style="text-align: center;"
         src="https://github.com/iia/thirst/blob/master/.readme-resources/thirst.png" />
 </p>
@@ -58,8 +58,8 @@ The following table describes the functionalities of the buttons.
 
 <p align="center">
     <img
-        width="428px"
-        height="434px"
+        width="248"
+        height="254"
         src="https://github.com/iia/Thirst/blob/master/.readme-resources/hardware_wio_node_buttons.png" />
 </p>
 
@@ -88,8 +88,8 @@ The following table describes the functionalities of the buttons.
 
 <p align="center">
     <img
-        width="428px"
-        height="434px"
+        width="248"
+        height="254"
         src="https://github.com/iia/Thirst/blob/master/.readme-resources/hardware_wio_node_leds.png" />
 </p>
 
@@ -182,8 +182,8 @@ To flash the Wio Node the serial USART device must be connected as shown below.
 
 <p align="center">
     <img
-        width="400px"
-        height="355px"
+        width="254"
+        height="248"
         src="https://github.com/iia/Thirst/blob/master/.readme-resources/hardware_wio_node_pinout.png" />
 </p>
 
