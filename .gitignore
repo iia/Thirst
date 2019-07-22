@@ -1,3 +1,4 @@
 .vscode/
+firmware/*.zbin
 firmware/bin/upgrade/
 firmware/libesphttpd/html_compressed/

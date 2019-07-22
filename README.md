@@ -130,7 +130,7 @@ There are four scripts for managing building and flashing:
 ### thirst-build.sh
 
 This script is used to simply build the firmware. After this script has finished executing successfully the
-firmware binaries will be generated in the *src/bin* directory. The script takes the SendGrid API v3 key as
+firmware binaries will be generated in the *firmware/bin* directory. The script takes the SendGrid API v3 key as
 the only argument.
 
 ```console
@@ -156,13 +156,13 @@ This one can be used to simply flash the firmware. Particularly useful for flash
 where no compilation or building is involved. This script must be invoked with two arguments which will specify
 the serial interface to be used for flashing and the firmware .zbin file containing the firmware binaries.
 
-:information_source: **_NOTE: The firmware .zbin file must be placed in the *src/* directory for this script to work._**
+:information_source: **_NOTE: The firmware .zbin file must be placed in the *firmware/* directory for this script to work._**
 
 ```console
 foo@bar:~/thirst$ ./thirst-flash.sh /dev/ttyUSB0 ./thirst_v1.zbin
 ```
 
-Considering */dev/ttyUSB0* is the serial interface to be used for flashing the Wio Node and the firmware file *thirst_v1.zbin* is present in *src/thirst_v1.zbin*.
+Considering */dev/ttyUSB0* is the serial interface to be used for flashing the Wio Node and the firmware file *thirst_v1.zbin* is present in *firmware/thirst_v1.zbin*.
 
 ### thirst-erase.sh
 
