@@ -12,4 +12,8 @@ The main purpose of this system is to monitor plants and when they might need
 water. Particularly useful for people who forget to water their plants. This
 system will check the soil moisture once every day and notify the user if needed.
 
-:information_source: **_For usage, details, and documentation refer to the [Wiki](https://github.com/iia/thirst/wiki)._**
+---
+
+:warning: **_For usage, details, and documentation refer to the [Wiki](https://github.com/iia/thirst/wiki)._**
+
+---
