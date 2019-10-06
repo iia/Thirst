@@ -5,6 +5,8 @@
         src=".github/res/img/thirst.png" />
 </p>
 
+# Thirst
+
 Thirst is a system that can monitor soil moisture and send notifications via
 email in case the moisture is above or below a pre-configured threshold.
 
