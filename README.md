@@ -1,6 +1,6 @@
 <p align="center">
     <img
-        width="170px"
+        width="25%"
         style="text-align: center;"
         src=".github/res/img/thirst.png" />
 </p>
