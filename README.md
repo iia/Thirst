@@ -2,7 +2,7 @@
     <img
         width="225px"
         style="text-align: center;"
-        src="https://github.com/iia/thirst/blob/master/.readme-resources/thirst.png" />
+        src="https://github.com/iia/thirst/blob/release-v3/.readme-resources/thirst.png" />
 </p>
 
 # Thirst
@@ -27,7 +27,7 @@ The moisture sensor must be connected to PORT1 of the Wio Node.
     <img
         width="350px"
         height="450px"
-        src="https://github.com/iia/Thirst/blob/master/.readme-resources/hardware.png" />
+        src="https://github.com/iia/thirst/blob/release-v3/.readme-resources/hardware.png" />
 </p>
 
 ## LEDs and Buttons
@@ -159,7 +159,7 @@ To flash the Wio Node the serial USART device must be connected as shown below.
     <img
         width="350px"
         height="450px"
-        src="https://github.com/iia/Thirst/blob/master/.readme-resources/hardware_flashing.png" />
+        src="https://github.com/iia/thirst/blob/release-v3/.readme-resources/hardware_flashing.png" />
 </p>
 
 ## Configuring the System
@@ -178,5 +178,5 @@ available on IP address: **192.168.7.1** which can be used with a web browser.
         width="350px"
         height="450px"
         align="center"
-        src="https://github.com/iia/Thirst/blob/master/.readme-resources/configuration_interface.png" />
+        src="https://github.com/iia/thirst/blob/release-v3/.readme-resources/configuration_interface.png" />
 </p>
