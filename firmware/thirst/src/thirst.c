@@ -1,3 +1,20 @@
+/*
+	This file is part of Thirst.
+
+	Thirst is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+
+	Thirst is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with Foobar.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
 #include "thirst.h"
 
 // Global variables.
@@ -558,6 +575,7 @@ config_load_default_config(void) {
 
 	config_current->threshold_percent = 8;
 	config_current->threshold_lt_gt = CONFIG_THRESHLOD_LT;
+	config_current->threshold_mode = CONFIG_THRESHOLD_MODE_SIMPLE;
 
 	// Calculate configuration hash.
 	config_current->hash = \
@@ -684,9 +702,11 @@ thirst_init(void) {
 		)
 	)
 	{
-		os_printf(
-			"\n[+] DBG :: SYSTEM :: Get partition information failed\n"
-		);
+		#if (PERIPH_ENABLE_DEBUG == 1)
+			os_printf(
+				"\n[+] DBG :: SYSTEM :: Get partition information failed\n"
+			);
+		#endif
 
 		return false;
 	}
@@ -729,6 +749,11 @@ sys_cb_init_done(void) {
 		system_set_os_print(1);
 
 		os_printf(
+			"\n[+] DBG :: SYSTEM :: Thirst firmware version = %s\n",
+			THIRST_FIRMWARE_VERSION
+		);
+
+		os_printf(
 			"\n[+] DBG :: SYSTEM :: SDK version = %s\n",
 			system_get_sdk_version()
 		);
@@ -739,31 +764,37 @@ sys_cb_init_done(void) {
 
 	// Initialise the main task.
 	if (!thirst_init_main_task()) {
-		os_printf("\n[+] DBG :: SYSTEM :: Main task init failed\n");
+		#if (PERIPH_ENABLE_DEBUG == 1)
+			os_printf("\n[+] DBG :: SYSTEM :: Main task init failed\n");
 
-		sys_state_transition_with_wifi_mode(
-			SYS_STATE_INIT,
-			SYS_STATE_ERROR_INIT_MAIN_TASK,
-			NULL_MODE
-		);
+			sys_state_transition_with_wifi_mode(
+				SYS_STATE_INIT,
+				SYS_STATE_ERROR_INIT_MAIN_TASK,
+				NULL_MODE
+			);
+		#endif
 
 		return;
 	}
 
 	// Initialise the firmware.
 	if (!thirst_init()) {
-		os_printf("\n[+] DBG :: SYSTEM :: Firmware init failed\n");
+		#if (PERIPH_ENABLE_DEBUG == 1)
+			os_printf("\n[+] DBG :: SYSTEM :: Firmware init failed\n");
 
-		sys_state_transition_with_wifi_mode(
-			SYS_STATE_INIT,
-			SYS_STATE_ERROR,
-			NULL_MODE
-		);
+			sys_state_transition_with_wifi_mode(
+				SYS_STATE_INIT,
+				SYS_STATE_ERROR,
+				NULL_MODE
+			);
+		#endif
 
 		return;
 	}
 
-	os_printf("\n[+] DBG :: SYSTEM :: System init OK\n");
+	#if (PERIPH_ENABLE_DEBUG == 1)
+		os_printf("\n[+] DBG :: SYSTEM :: System init OK\n");
+	#endif
 
 	sys_state_transition_with_wifi_mode(
 		SYS_STATE_INIT,
@@ -1026,26 +1057,56 @@ sys_cb_wifi_event(System_Event_t* evt) {
 		 * with WiFi enabled to get a consistent sensor reading.
 		 */
 		adc = periph_read_adc((uint32_t)PERIPH_ADC_SAMPLE_SIZE);
-		percentage = \
-			(config_current->registered_value * config_current->threshold_percent) / 100;
 
 		#if (PERIPH_ENABLE_DEBUG == 1)
 			os_printf("\n[+] DBG :: SYSTEM :: ADC reading = %d\n", adc);
 		#endif
 
-		if (config_current->threshold_lt_gt == (uint8_t)CONFIG_THRESHLOD_LT) {
-			if (adc <= (config_current->registered_value - percentage)) {
-				send_notification = true;
+		if (config_current->threshold_mode == (uint8_t)CONFIG_THRESHOLD_MODE_ADVANCED) {
+			#if (PERIPH_ENABLE_DEBUG == 1)
+				os_printf("\n[+] DBG :: SYSTEM :: Handling advanced mode\n");
+			#endif
+
+			percentage = \
+				(config_current->registered_value * config_current->threshold_percent) / 100;
+
+			if (config_current->threshold_lt_gt == (uint8_t)CONFIG_THRESHLOD_LT) {
+				if (adc <= (config_current->registered_value - percentage)) {
+					send_notification = true;
+				}
+			}
+			else if (config_current->threshold_lt_gt == (uint8_t)CONFIG_THRESHLOD_GT) {
+				if (adc >= (config_current->registered_value + percentage)) {
+					send_notification = true;
+				}
 			}
 		}
-		else if (config_current->threshold_lt_gt == (uint8_t)CONFIG_THRESHLOD_GT) {
-			if (adc >= (config_current->registered_value + percentage)) {
-				send_notification = true;
+		else if (config_current->threshold_mode == (uint8_t)CONFIG_THRESHOLD_MODE_SIMPLE) {
+			#if (PERIPH_ENABLE_DEBUG == 1)
+				os_printf("\n[+] DBG :: SYSTEM :: Handling simple mode\n");
+			#endif
+
+			if (config_current->threshold_lt_gt == (uint8_t)CONFIG_THRESHLOD_LT) {
+				if (adc < (config_current->registered_value)) {
+					send_notification = true;
+				}
 			}
+			else if (config_current->threshold_lt_gt == (uint8_t)CONFIG_THRESHLOD_GT) {
+				if (adc > (config_current->registered_value)) {
+					send_notification = true;
+				}
+			}
+		}
+		else {
+			#if (PERIPH_ENABLE_DEBUG == 1)
+				os_printf("\n[+] DBG :: SYSTEM :: Unknown mode\n");
+			#endif
 		}
 
 		if (send_notification) {
-			os_printf("\n[+] DBG :: SYSTEM :: Sending notification e-mail\n");
+			#if (PERIPH_ENABLE_DEBUG == 1)
+				os_printf("\n[+] DBG :: SYSTEM :: Sending notification email\n");
+			#endif
 
 			err = \
 				espconn_gethostbyname(

@@ -1,3 +1,20 @@
+/*
+	This file is part of Thirst.
+
+	Thirst is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+
+	Thirst is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with Foobar.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
 #include "thirst.h"
 
 extern os_timer_t sys_timer_sw;
@@ -208,6 +225,11 @@ web_interface_save_config_to_flash(void) {
 		os_printf(
 			"\nwifi_ap_password = %s",
 			config_current->wifi_ap_password
+		);
+
+		os_printf(
+			"\nthreshold_mode = %d",
+			config_current->threshold_mode
 		);
 
 		os_printf(
@@ -492,6 +514,7 @@ web_interface_cgi_get_config(HttpdConnData* connection_data) {
 		config_current->wifi_ap_ssid,
 		config_current->wifi_ap_bssid,
 		config_current->wifi_ap_password,
+		config_current->threshold_mode,
 		config_current->threshold_percent,
 		config_current->threshold_lt_gt,
 		periph_read_adc((uint32_t)PERIPH_ADC_SAMPLE_SIZE),
@@ -524,7 +547,7 @@ web_interface_cgi_save_config(HttpdConnData* connection_data) {
 	char data_json_len_raw[8];
 	uint32_t data_json_len = 0;
 	struct jsonparse_state* parser_json = NULL;
-
+	char threshold_mode[2];
 	char threshold_lt_gt[2];
 	char registered_value[8];
 	char threshold_percent[4];
@@ -616,7 +639,22 @@ web_interface_cgi_save_config(HttpdConnData* connection_data) {
 
 	while ((type_json = jsonparse_next(parser_json)) != 0) {
 		if (type_json == JSON_TYPE_PAIR_NAME) {
-			if (jsonparse_strcmp_value(parser_json, "plantName") == 0) {
+			if (jsonparse_strcmp_value(parser_json, "thresholdMode") == 0) {
+				os_bzero(&threshold_mode, 2);
+
+				jsonparse_next(parser_json);
+				jsonparse_next(parser_json);
+
+				jsonparse_copy_value(
+					parser_json,
+					(char*)&threshold_mode,
+					2
+				);
+
+				config_current->threshold_mode = \
+					(uint8_t)strtoul((char*)&threshold_mode, NULL, 10);
+			}
+			else if (jsonparse_strcmp_value(parser_json, "plantName") == 0) {
 				os_bzero(&plant_name, CONFIG_SSID_LEN + 1);
 
 				jsonparse_next(parser_json);

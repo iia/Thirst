@@ -1,3 +1,20 @@
+<!--
+  This file is part of Thirst.
+
+  Thirst is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  Thirst is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with Foobar.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -142,8 +159,27 @@
                 About
               </h4>
             </div>
-            <div class="modal-body">
-              Thirst is a personal hobby project for fun. Current firmware version: v4.
+            <div class="modal-body text-center">
+              <img src="thirst.png" alt="Thirst" />
+              <br />
+              <h3>
+                <strong>Version v5</strong>
+              </h3>
+              <br />
+              <h5>Copyright (C) 2019 Ishraq Ibne Ashraf</h5>
+              <a
+                target="_top"
+                href="mailto:ishraq.i.ashraf@gmail.com">
+                ishraq.i.ashraf@gmail.com
+              </a>
+              <br />
+              <br />
+              <h5>Licence GPL-3.0 or later</h5>
+              <a
+                target="_blank"
+                href="https://www.gnu.org/licenses/gpl-3.0.html">
+                https://www.gnu.org/licenses/gpl-3.0.html
+              </a>
             </div>
             <div class="modal-footer">
               <button
@@ -390,36 +426,56 @@
               </div>
               <div class="row form-group">
                 <label
+                  for="threshold-mode"
+                  class="col-sm-3 control-label">
+                  Threshold Mode:
+                </label>
+                <div class="col-sm-7">
+                  <select
+                    id="threshold-mode"
+                    class="form-control"
+                    name="threshold-mode">
+                    <option value="1">Simple</option>
+                    <option value="2">Advanced</option>
+                  </select>
+                </div>
+              </div>
+              <div class="row form-group">
+                <label
                   class="col-sm-3 control-label"
                   for="threshold-percent">
                   Threshold:
                 </label>
-                <div class="col-sm-2 text-right">
+                <div class="col-sm-2 text-left">
                   Notify when
                 </div>
-                <div class="col-sm-2">
-                  <input
-                    min="1"
-                    max="100"
-                    value="0"
-                    type="number"
-                    class="form-control text-center"
-                    id="threshold-percent"
-                    name="threshold-percent" />
-                  <div
-                    class="has-error hidden"
-                    id="hb-threshold-percent">
-                    <p class="help-block">
-                      <b>
-                        <small>
-                          Value must be within 1 to 100.
-                        </small>
-                      </b>
-                    </p>
+                <div
+                  class="collapse"
+                  id="threshold-mode-advanced">
+                  <div class="col-sm-2">
+                    <input
+                      min="1"
+                      max="100"
+                      value="0"
+                      type="number"
+                      id="threshold-percent"
+                      name="threshold-percent"
+                      class="form-control text-center" />
+                    <div
+                      class="has-error hidden"
+                      id="hb-threshold-percent">
+                      <p class="help-block">
+                        <b>
+                          <small>
+                            Value must be within 1 to 100.
+                          </small>
+                        </b>
+                      </p>
+                    </div>
                   </div>
-                </div>
-                <div class="col-sm-5">
-                  percent
+                  <div class="col-sm-5">
+                    percent
+                  </div>
                 </div>
               </div>
               <div class="row form-group">
@@ -437,7 +493,7 @@
                   </select>
                 </div>
                 <div class="col-sm-2 text-center">
-                  than current moisture
+                  than the current moisture
                 </div>
                 <div class="col-sm-2">
                   <input
@@ -459,6 +515,21 @@
                   </button>
                 </div>
               </div>
+              <div class="row form-group">
+                <div
+                  role="alert"
+                  class="alert alert-warning col-sm-offset-3 col-sm-7">
+                  <strong>
+                    Note that the current moisture value depends on the type of
+                    the sensor currently being used in the system.
+                    <br />
+                    <br />
+                    For resistive sensors the value will be higher as the soil gets
+                    more moist. For capacitive type of sensors the value will be lower
+                    as the soil gets more moist.
+                  </strong>
+                </div>
+              </div>
             </div>
           </div>
           <div class="panel panel-default">
@@ -467,16 +538,14 @@
                 style="font-size:1.5em;"
                 class="glyphicon glyphicon-bullhorn">
               </span>
-              &nbsp;&nbsp;<font size="3">
-                      Notifications
-                    </font>
+              &nbsp;&nbsp;<font size="3">Notifications</font>
             </div>
             <div class="panel-body">
               <div class="row form-group">
                 <label
                   for="notification-email"
                   class="col-sm-3 control-label">
-                  E-mail:
+                  Email:
                 </label>
                 <div class="col-sm-7">
                   <input
@@ -492,7 +561,7 @@
                     <p class="help-block">
                       <b>
                         <small>
-                          E-mail address can't be empty, can't contain non-ASCII
+                          Email address can't be empty, can't contain non-ASCII
                           characters and must not be more than 254 characters long.
                         </small>
                       </b>
@@ -552,7 +621,7 @@
                     <p class="help-block">
                       <b>
                         <small>
-                          E-mail notification's body can't be empty, must not
+                          Email notification's body can't be empty, must not
                           be more than 512 characters long and can only contain
                           alphanumeric characters, blank spaces, question mark,
                           exclamation mark, hyphen, comma and dot.
@@ -632,6 +701,9 @@
   var WEB_INTERFACE_REQ_JSON_GET_SENSOR_READING  = 4;
   var REQUEST_JSON_GET_WIFI_SCAN_RESULT          = 5;
 
+  var THRESHOLD_MODE_SIMPLE = 1;
+  var THRESHOLD_MODE_ADVANCED = 2;
+
   var lastReadConfiguration = null;
 
   // UI element events.
@@ -675,6 +747,17 @@
         saveConfig();
       }
     );
+
+  $('#threshold-mode').change(
+    function(e) {
+      if ($(this).val() == THRESHOLD_MODE_SIMPLE) {
+        $('#threshold-mode-advanced').collapse('hide')
+      }
+      else if ($(this).val() == THRESHOLD_MODE_ADVANCED) {
+        $('#threshold-mode-advanced').collapse('show')
+      }
+    }
+  );
 
   $('#wifi-ap')
     .change(
@@ -997,7 +1080,7 @@
       $('#hb-threshold-percent').addClass('hidden');
     }
 
-    // TODO: Add more detailed e-mail address check.
+    // TODO: Add more detailed email address check.
     if(
       (notificationEmail.length < 1) ||
       (!isASCII(notificationEmail)) ||
@@ -1099,6 +1182,7 @@
     $('#registered-value').val(data.registered_value);
     $('#threshold-percent').val(data.threshold_percent);
     $('#notification-email').val(data.notification_email);
+    $('#threshold-mode').val(data.threshold_mode.toString());
     $('#configuration-password').val(data.configuration_password);
     $('#notification-email-subject').val(data.notification_email_subject);
     $('#notification-email-message').val(data.notification_email_message);
@@ -1213,6 +1297,9 @@
 
         "notificationEmail":
           $('#notification-email').val(),
+
+        "thresholdMode":
+          $('#threshold-mode').val(),
 
         "notificationEmailSubject":
           $('#notification-email-subject').val(),

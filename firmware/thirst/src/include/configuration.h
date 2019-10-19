@@ -1,9 +1,28 @@
+/*
+	This file is part of Thirst.
+
+	Thirst is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+
+	Thirst is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with Foobar.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
 #ifndef CONFIGURATION_H
 #define CONFIGURATION_H
 
 #define CONFIG_SSID_LEN                 32
 #define CONFIG_BSSID_LEN                16
 #define CONFIG_SSID_PASSWORD_LEN        64
+#define CONFIG_THRESHOLD_MODE_SIMPLE    1
+#define CONFIG_THRESHOLD_MODE_ADVANCED  2
 #define CONFIG_NOTIFICATION_EMAIL_LEN   64
 #define CONFIG_NOTIFICATION_SUBJECT_LEN 64
 #define CONFIG_NOTIFICATION_MESSAGE_LEN 512
@@ -19,6 +38,7 @@ typedef struct {
 	uint8_t hash;
 
 	// Plant configuration.
+	uint8_t threshold_mode;
 	uint8_t threshold_lt_gt;
 	uint8_t threshold_percent;
 	uint32_t registered_value;
