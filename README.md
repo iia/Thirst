@@ -7,7 +7,7 @@
 
 # Thirst
 
-Thirst is a system that can monitor soil moisture and send notifications via
+Thirst is a battery operated system that can monitor soil moisture and send notifications via
 email in case the moisture is above or below a pre-configured threshold.
 
 The main purpose of this system is to monitor plants and when they might need
