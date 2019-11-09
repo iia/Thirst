@@ -1087,12 +1087,12 @@ sys_cb_wifi_event(System_Event_t* evt) {
 			#endif
 
 			if (config_current->threshold_lt_gt == (uint8_t)CONFIG_THRESHLOD_LT) {
-				if (adc < (config_current->registered_value)) {
+				if ((adc + 4) < (config_current->registered_value)) {
 					send_notification = true;
 				}
 			}
 			else if (config_current->threshold_lt_gt == (uint8_t)CONFIG_THRESHLOD_GT) {
-				if (adc > (config_current->registered_value)) {
+				if ((adc - 4) > (config_current->registered_value)) {
 					send_notification = true;
 				}
 			}
