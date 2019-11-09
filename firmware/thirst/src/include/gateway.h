@@ -57,7 +57,7 @@ Authorization: Bearer %s\r\n\
 ],\
 \"from\":\
 {\
-\"email\":\"notifications@thirst\",\
+\"email\":\"notification@thirst.alert\",\
 \"name\":\"%s\"\
 },\
 \"content\":\
